@@ -47,12 +47,12 @@ const orgs = [
     },
 ];
 
-const stats = [
-    { num: '18', label: 'Active tasks this week' },
-    { num: '9', label: 'Concerns awaiting review' },
-    { num: '5', label: 'Events coming up' },
-    { num: '142', label: 'Members across all orgs' },
-];
+// const stats = [
+//     { num: '18', label: 'Active tasks this week' },
+//     { num: '9', label: 'Concerns awaiting review' },
+//     { num: '5', label: 'Events coming up' },
+//     { num: '142', label: 'Members across all orgs' },
+// ];
 
 const galleryImages = Array.from(
     { length: 9 },
