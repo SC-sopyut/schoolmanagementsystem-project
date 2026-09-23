@@ -9,11 +9,12 @@ type LoginForm = {
 };
 
 export default function Login({ status }: { status?: string }) {
-    const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
-        email: '',
-        password: '',
-        remember: false,
-    });
+    const { data, setData, post, processing, errors, reset } =
+        useForm<LoginForm>({
+            email: '',
+            password: '',
+            remember: false,
+        });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -30,14 +31,20 @@ export default function Login({ status }: { status?: string }) {
                 {/* Blurred background */}
                 <div
                     className="absolute inset-0 scale-110 bg-cover bg-center blur-md brightness-[0.55]"
-                    style={{ backgroundImage: "url('/images/acc-campus-bg.png')" }}
+                    style={{
+                        backgroundImage: "url('/images/acc-campus-bg.png')",
+                    }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 to-slate-900/60" />
 
                 {/* Login card */}
                 <div className="relative z-10 mx-4 w-full max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/90">
                     <div className="mb-3 flex justify-center">
-                        <img src="/images/councilforge-logo.png" alt="CouncilForge" className="h-16 w-16 rounded-2xl object-contain" />
+                        <img
+                            src="/images/councilforge-logo.png"
+                            alt="CouncilForge"
+                            className="h-16 w-16 rounded-2xl object-contain"
+                        />
                     </div>
 
                     <h1 className="mb-1 text-center text-xl font-semibold text-slate-900 dark:text-white">
@@ -55,7 +62,10 @@ export default function Login({ status }: { status?: string }) {
 
                     <form onSubmit={submit}>
                         <div className="mb-4">
-                            <label htmlFor="email" className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <label
+                                htmlFor="email"
+                                className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 School email
                             </label>
                             <input
@@ -66,14 +76,23 @@ export default function Login({ status }: { status?: string }) {
                                 autoFocus
                                 autoComplete="username"
                                 placeholder="you@acc.edu.ph"
-                                onChange={(e) => setData('email', e.target.value)}
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
                                 className="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
-                            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+                            {errors.email && (
+                                <p className="mt-1 text-xs text-red-600">
+                                    {errors.email}
+                                </p>
+                            )}
                         </div>
 
                         <div className="mb-2">
-                            <label htmlFor="password" className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <label
+                                htmlFor="password"
+                                className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 Password
                             </label>
                             <input
@@ -83,10 +102,16 @@ export default function Login({ status }: { status?: string }) {
                                 value={data.password}
                                 autoComplete="current-password"
                                 placeholder="Enter password"
-                                onChange={(e) => setData('password', e.target.value)}
+                                onChange={(e) =>
+                                    setData('password', e.target.value)
+                                }
                                 className="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
-                            {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+                            {errors.password && (
+                                <p className="mt-1 text-xs text-red-600">
+                                    {errors.password}
+                                </p>
+                            )}
                         </div>
 
                         <div className="mb-6 flex items-center justify-between text-xs">
@@ -95,13 +120,18 @@ export default function Login({ status }: { status?: string }) {
                                     type="checkbox"
                                     name="remember"
                                     checked={data.remember}
-                                    onChange={(e) => setData('remember', e.target.checked)}
+                                    onChange={(e) =>
+                                        setData('remember', e.target.checked)
+                                    }
                                     className="rounded border-slate-300 text-indigo-600 shadow-sm"
                                 />
                                 Remember this device
                             </label>
 
-                            <Link href="/forgot-password" className="text-indigo-600 hover:underline">
+                            <Link
+                                href="/forgot-password"
+                                className="text-indigo-600 hover:underline"
+                            >
                                 Forgot password?
                             </Link>
                         </div>
@@ -116,14 +146,23 @@ export default function Login({ status }: { status?: string }) {
 
                         <p className="text-center text-xs text-slate-500 dark:text-slate-400">
                             Need to register your team?{' '}
-                            <Link href={register.url()} className="text-indigo-600 hover:underline">
+                            <Link
+                                href={register.url()}
+                                className="text-indigo-600 hover:underline"
+                            >
                                 Create account
                             </Link>
                         </p>
                     </form>
 
                     <div className="mt-5 flex items-center justify-center gap-2 border-t border-slate-200 pt-4 text-[11px] text-slate-400 dark:border-slate-700">
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
