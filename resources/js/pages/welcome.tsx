@@ -98,9 +98,7 @@ function useWordReveal<T extends HTMLElement>() {
     useEffect(() => {
         const container = ref.current;
         if (!container) return;
-        const words = Array.from(
-            container.querySelectorAll<HTMLElement>('[data-reveal-word]'),
-        );
+        const words = Array.from(container.querySelectorAll<HTMLElement>('[data-reveal-word]'));
         if (words.length === 0) return;
 
         let rafId: number;
@@ -130,22 +128,59 @@ function useWordReveal<T extends HTMLElement>() {
     return ref;
 }
 
+function FadeIn({
+    children,
+    className,
+    delay = 0,
+}: {
+    children: React.ReactNode;
+    className?: string;
+    delay?: number;
+}) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setVisible(entry.isIntersecting);
+            },
+            { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div
+            ref={ref}
+            className={className}
+            style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(20px)',
+                transition: `opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s`,
+            }}
+        >
+            {children}
+        </div>
+    );
+}
+
 function RevealWords({ text }: { text: string }) {
     return (
         <>
             {text.split(' ').map((word, i, arr) => (
-                <span
-                    key={i}
-                    data-reveal-word
-                    style={{ opacity: 0.22, display: 'inline-block' }}
-                >
+                <span key={i} data-reveal-word style={{ opacity: 0.22, display: 'inline-block' }}>
                     {word}
-                    {i < arr.length - 1 ? '\u00A0' : ''}
+                    {i < arr.length - 1 ? ' ' : ''}
                 </span>
             ))}
         </>
     );
 }
+
 
 export default function Welcome() {
     const galleryWrapperRef = useRef<HTMLDivElement>(null);
@@ -173,10 +208,7 @@ export default function Welcome() {
         if (!wrapper || !track) return;
         const singleSetWidth = track.scrollWidth / 2;
         const amount = wrapper.clientWidth * 0.9;
-        applyGalleryPosition(
-            galleryPositionRef.current + direction * amount,
-            singleSetWidth,
-        );
+        applyGalleryPosition(galleryPositionRef.current + direction * amount, singleSetWidth);
     };
 
     useEffect(() => {
@@ -191,10 +223,7 @@ export default function Welcome() {
             if (lastTime !== null && !isGalleryPaused) {
                 const deltaSeconds = (time - lastTime) / 1000;
                 const singleSetWidth = track.scrollWidth / 2;
-                applyGalleryPosition(
-                    galleryPositionRef.current + pixelsPerSecond * deltaSeconds,
-                    singleSetWidth,
-                );
+                applyGalleryPosition(galleryPositionRef.current + pixelsPerSecond * deltaSeconds, singleSetWidth);
             }
             lastTime = time;
             rafId = requestAnimationFrame(step);
@@ -267,10 +296,7 @@ export default function Welcome() {
                     <div className="absolute inset-0 bg-gradient-to-r from-[#0B1226]/95 via-[#0B1226]/70 to-[#0B1226]/20" />
 
                     <div className="relative ml-48 px-8 py-16 sm:ml-48 sm:px-12 sm:py-20">
-                        <h1
-                            ref={heroHeadingRef}
-                            className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl"
-                        >
+                        <h1 ref={heroHeadingRef} className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
                             <RevealWords text="Where the whole student council actually gets its work done." />
                         </h1>
                         <p className="mt-6 max-w-[52ch] text-[#D3D9E8]">
@@ -317,10 +343,7 @@ export default function Welcome() {
                 {/* Orgs */}
                 <section id="orgs" className="mx-auto max-w-5xl px-7 py-18">
                     <div className="mb-10 max-w-[56ch]">
-                        <h2
-                            ref={orgsHeadingRef}
-                            className="text-3xl font-semibold"
-                        >
+                        <h2 ref={orgsHeadingRef} className="text-3xl font-semibold">
                             <RevealWords text="Different organizations, different needs, one system." />
                         </h2>
                         <p className="mt-3 text-[#5B6478]">
@@ -330,48 +353,45 @@ export default function Welcome() {
                         </p>
                     </div>
 
-                    <div
-                        ref={galleryWrapperRef}
-                        className="org-marquee-mask relative overflow-hidden"
-                    >
-                        <button
-                            type="button"
-                            onClick={() => stepGallery(-1)}
-                            aria-label="Previous photos"
-                            className="absolute top-1/2 left-0 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
-                        >
-                            ‹
-                        </button>
+                    <FadeIn>
+                        <div ref={galleryWrapperRef} className="org-marquee-mask relative overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => stepGallery(-1)}
+                                aria-label="Previous photos"
+                                className="absolute top-1/2 left-0 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
+                            >
+                                ‹
+                            </button>
 
-                        <div
-                            ref={galleryTrackRef}
-                            onMouseEnter={() => setIsGalleryPaused(true)}
-                            onMouseLeave={() => setIsGalleryPaused(false)}
-                            onTouchStart={() => setIsGalleryPaused(true)}
-                            onTouchEnd={() => setIsGalleryPaused(false)}
-                            className="flex w-max gap-4"
-                        >
-                            {[...galleryImages, ...galleryImages].map(
-                                (src, i) => (
+                            <div
+                                ref={galleryTrackRef}
+                                onMouseEnter={() => setIsGalleryPaused(true)}
+                                onMouseLeave={() => setIsGalleryPaused(false)}
+                                onTouchStart={() => setIsGalleryPaused(true)}
+                                onTouchEnd={() => setIsGalleryPaused(false)}
+                                className="flex w-max gap-4"
+                            >
+                                {[...galleryImages, ...galleryImages].map((src, i) => (
                                     <img
                                         key={`${src}-${i}`}
                                         src={src}
                                         alt={`Council activity ${(i % galleryImages.length) + 1}`}
                                         className="h-56 w-80 shrink-0 rounded-2xl object-cover sm:h-64 sm:w-96"
                                     />
-                                ),
-                            )}
-                        </div>
+                                ))}
+                            </div>
 
-                        <button
-                            type="button"
-                            onClick={() => stepGallery(1)}
-                            aria-label="Next photos"
-                            className="absolute top-1/2 right-0 z-10 flex h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
-                        >
-                            ›
-                        </button>
-                    </div>
+                            <button
+                                type="button"
+                                onClick={() => stepGallery(1)}
+                                aria-label="Next photos"
+                                className="absolute top-1/2 right-0 z-10 flex h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
+                            >
+                                ›
+                            </button>
+                        </div>
+                    </FadeIn>
 
                     <p className="mt-4 text-sm text-[#5B6478]">
                         Council-wide events assign tasks down to each org; any
@@ -386,10 +406,7 @@ export default function Welcome() {
                 >
                     <div className="mx-auto max-w-5xl px-7">
                         <div className="mb-10 max-w-[56ch]">
-                            <h2
-                                ref={modulesHeadingRef}
-                                className="text-3xl font-semibold"
-                            >
+                            <h2 ref={modulesHeadingRef} className="text-3xl font-semibold">
                                 <RevealWords text="Everything a council does, built as one workspace." />
                             </h2>
                             <p className="mt-3 text-[#5B6478]">
@@ -398,9 +415,10 @@ export default function Welcome() {
                             </p>
                         </div>
                         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                            {features.map((f) => (
-                                <div
+                            {features.map((f, i) => (
+                                <FadeIn
                                     key={f.title}
+                                    delay={i * 0.08}
                                     className="rounded-xl border border-[#E1E4EA] p-6"
                                 >
                                     <div className="mb-3.5 flex h-8.5 w-8.5 items-center justify-center rounded-lg bg-[#F4E3D6] font-semibold text-[#C1571F]">
@@ -410,7 +428,7 @@ export default function Welcome() {
                                     <p className="mt-2 text-sm text-[#5B6478]">
                                         {f.body}
                                     </p>
-                                </div>
+                                </FadeIn>
                             ))}
                         </div>
                     </div>
@@ -419,15 +437,12 @@ export default function Welcome() {
                 {/* Roles */}
                 <section id="roles" className="mx-auto max-w-5xl px-7 py-18">
                     <div className="mb-10 max-w-[56ch]">
-                        <h2
-                            ref={rolesHeadingRef}
-                            className="text-3xl font-semibold"
-                        >
+                        <h2 ref={rolesHeadingRef} className="text-3xl font-semibold">
                             <RevealWords text="One login. A dashboard built for your role." />
                         </h2>
                     </div>
                     <div className="grid rounded-2xl border border-[#E1E4EA] bg-white sm:grid-cols-2">
-                        <div className="border-b border-[#E1E4EA] p-7 sm:border-r sm:border-b-0">
+                        <FadeIn className="border-b border-[#E1E4EA] p-7 sm:border-r sm:border-b-0">
                             <span className="rounded bg-[#F5F6F8] px-2.5 py-1 text-xs font-semibold text-[#5B6478]">
                                 Students
                             </span>
@@ -443,8 +458,8 @@ export default function Welcome() {
                                 <li>Raise a concern to your org's officers</li>
                                 <li>Join events run by your organization</li>
                             </ul>
-                        </div>
-                        <div className="p-7">
+                        </FadeIn>
+                        <FadeIn delay={0.1} className="p-7">
                             <span className="rounded bg-[#F5F6F8] px-2.5 py-1 text-xs font-semibold text-[#5B6478]">
                                 Officers
                             </span>
@@ -464,7 +479,7 @@ export default function Welcome() {
                                     Log activities for accreditation reports
                                 </li>
                             </ul>
-                        </div>
+                        </FadeIn>
                     </div>
                 </section>
 
