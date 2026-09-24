@@ -79,7 +79,7 @@ export default function Login({ status }: { status?: string }) {
                                 onChange={(e) =>
                                     setData('email', e.target.value)
                                 }
-                                className="w-full h-10 rounded-lg px-3 border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
                             {errors.email && (
                                 <p className="mt-1 text-xs text-red-600">
@@ -105,7 +105,7 @@ export default function Login({ status }: { status?: string }) {
                                 onChange={(e) =>
                                     setData('password', e.target.value)
                                 }
-                                className="w-full h-10 rounded-lg px-3 border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
                             {errors.password && (
                                 <p className="mt-1 text-xs text-red-600">
