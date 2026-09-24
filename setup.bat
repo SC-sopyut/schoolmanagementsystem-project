@@ -1,65 +1,65 @@
-@echo off
-echo ==========================================
-echo   🚀 STARTING LARAVEL + VITE PROJECT SETUP
-echo ==========================================
+@REM  @echo off
+@REM  echo ==========================================
+@REM  echo   🚀 STARTING LARAVEL + VITE PROJECT SETUP
+@REM  echo ==========================================
 
-:: 1. Handle .env Configuration File
-echo 📝 Checking for .env configuration file...
-if not exist ".env" (
-    if exist ".env.example" (
-        copy ".env.example" ".env" >nul
-        echo ✅ Created .env file from .env.example template.
-    ) else (
-        echo ❌ Error: Neither .env nor .env.example was found.
-        echo Please create a .env file manually before continuing.
-        pause
-        exit /b 1
-    )
-) else (
-    echo ℹ️ .env file already exists. Skipping creation.
-)
+@REM  :: 1. Handle .env Configuration File
+@REM  echo 📝 Checking for .env configuration file...
+@REM  if not exist ".env" (
+@REM      if exist ".env.example" (
+@REM          copy ".env.example" ".env" >nul
+@REM          echo ✅ Created .env file from .env.example template.
+@REM      ) else (
+@REM          echo ❌ Error: Neither .env nor .env.example was found.
+@REM          echo Please create a .env file manually before continuing.
+@REM          pause
+@REM          exit /b 1
+@REM      )
+@REM  ) else (
+@REM      echo ℹ️ .env file already exists. Skipping creation.
+@REM  )
 
-:: 2. Install Node Dependencies
-echo 📦 Installing Node.js packages...
-call npm install
-if %errorlevel% neq 0 (
-    echo ❌ npm install failed. Make sure Node.js is installed.
-    pause
-    exit /b %errorlevel%
-)
+@REM  :: 2. Install Node Dependencies
+@REM  echo 📦 Installing Node.js packages...
+@REM  call npm install
+@REM  if %errorlevel% neq 0 (
+@REM      echo ❌ npm install failed. Make sure Node.js is installed.
+@REM      pause
+@REM      exit /b %errorlevel%
+@REM  )
 
-:: 3. Install PHP Dependencies
-echo 🐘 Installing PHP Composer packages...
-call composer install
-if %errorlevel% neq 0 (
-    echo ❌ composer install failed. Make sure Composer and PHP are installed.
-    pause
-    exit /b %errorlevel%
-)
+@REM  :: 3. Install PHP Dependencies
+@REM  echo 🐘 Installing PHP Composer packages...
+@REM  call composer install
+@REM  if %errorlevel% neq 0 (
+@REM      echo ❌ composer install failed. Make sure Composer and PHP are installed.
+@REM      pause
+@REM      exit /b %errorlevel%
+@REM  )
 
-:: 4. Setup SQLite Database File
-echo 🗄️ Setting up SQLite database...
-if not exist "database\database.sqlite" (
-    copy nul "database\database.sqlite" >nul
-    echo ✅ Created database.sqlite file.
-) else (
-    echo ℹ️ database.sqlite already exists. Skipping creation.
-)
+@REM  :: 4. Setup SQLite Database File
+@REM  echo 🗄️ Setting up SQLite database...
+@REM  if not exist "database\database.sqlite" (
+@REM      copy nul "database\database.sqlite" >nul
+@REM      echo ✅ Created database.sqlite file.
+@REM  ) else (
+@REM      echo ℹ️ database.sqlite already exists. Skipping creation.
+@REM  )
 
-:: 5. Generate Application Key
-echo 🔑 Generating Laravel application key...
-call php artisan key:generate
+@REM  :: 5. Generate Application Key
+@REM  echo 🔑 Generating Laravel application key...
+@REM  call php artisan key:generate
 
-:: 6. Run Migrations
-echo 🗄️ Running database migrations...
-call php artisan config:clear
-call php artisan migrate --force
+@REM  :: 6. Run Migrations
+@REM  echo 🗄️ Running database migrations...
+@REM  call php artisan config:clear
+@REM  call php artisan migrate --force
 
-echo ==========================================
-echo   🎉 SETUP COMPLETE! 
-echo ==========================================
-echo   To start coding, run these commands in separate terminals:
-echo   1. php artisan serve
-echo   2. npm run dev
-echo ==========================================
-pause
+@REM  echo ==========================================
+@REM  echo   🎉 SETUP COMPLETE! 
+@REM  echo ==========================================
+@REM  echo   To start coding, run these commands in separate terminals:
+@REM  echo   1. php artisan serve
+@REM  echo   2. npm run dev
+@REM  echo ==========================================
+@REM  pause
