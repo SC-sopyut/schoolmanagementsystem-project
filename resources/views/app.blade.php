@@ -21,12 +21,53 @@
 
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
-            html {
-                background-color: oklch(1 0 0);
+            #page-load-screen {
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: #020617;
+                color: white;
+                opacity: 1;
+                transition: opacity 300ms ease;
             }
 
-            html.dark {
-                background-color: oklch(0.145 0 0);
+            #page-load-screen.is-hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            #page-load-screen img {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 16px;
+                object-fit: contain;
+            }
+
+            #page-load-screen p {
+                margin-top: 16px;
+                font: 500 14px sans-serif;
+            }
+
+            .page-loader-spinner {
+                width: 32px;
+                height: 32px;
+                border: 4px solid rgb(255 255 255 / 30%);
+                border-top-color: #6366f1;
+                border-radius: 50%;
+                animation: page-loader-spin 800ms linear infinite;
+            }
+
+            @keyframes page-loader-spin {
+                to { transform: rotate(360deg); }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                #page-load-screen { transition: none; }
+                .page-loader-spinner { animation-duration: 1600ms; }
             }
         </style>
 
@@ -44,5 +85,22 @@
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
+
+        <div id="page-load-screen" role="status" aria-live="polite">
+            <img src="/images/councilforge-logo.png" alt="">
+            <div class="page-loader-spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <script>
+            window.addEventListener('load', () => {
+                const loader = document.getElementById('page-load-screen');
+
+                if (!loader) return;
+
+                requestAnimationFrame(() => loader.classList.add('is-hidden'));
+                setTimeout(() => loader.remove(), 350);
+            }, { once: true });
+        </script>
     </body>
 </html>

@@ -92,22 +92,87 @@ const features = [
     },
 ];
 
-export default function Welcome() {
-    const galleryRef = useRef<HTMLDivElement>(null);
-    const [isGalleryPaused, setIsGalleryPaused] = useState(false);
+function useWordReveal<T extends HTMLElement>() {
+    const ref = useRef<T>(null);
 
-    const scrollGallery = (direction: 1 | -1) => {
-        const el = galleryRef.current;
-        if (!el) return;
-        el.scrollBy({
-            left: direction * el.clientWidth * 0.9,
-            behavior: 'smooth',
-        });
+    useEffect(() => {
+        const container = ref.current;
+        if (!container) return;
+        const words = Array.from(container.querySelectorAll<HTMLElement>('[data-reveal-word]'));
+        if (words.length === 0) return;
+
+        let rafId: number;
+        const update = () => {
+            const rect = container.getBoundingClientRect();
+            const vh = window.innerHeight;
+            const start = vh * 0.85; // reveal begins when the top hits 85% down the viewport
+            const end = vh * 0.35; // fully revealed by the time it hits 35% down
+            const raw = (start - rect.top) / (start - end);
+            const progress = Math.min(1, Math.max(0, raw));
+
+            const n = words.length;
+            words.forEach((word, i) => {
+                // each word needs 1/n of extra progress after the previous one to fully brighten,
+                // so words light up left-to-right as progress increases
+                const wordProgress = Math.min(1, Math.max(0, progress * n - i));
+                word.style.opacity = String(0.22 + wordProgress * 0.78);
+            });
+
+            rafId = requestAnimationFrame(update);
+        };
+
+        rafId = requestAnimationFrame(update);
+        return () => cancelAnimationFrame(rafId);
+    }, []);
+
+    return ref;
+}
+
+function RevealWords({ text }: { text: string }) {
+    return (
+        <>
+            {text.split(' ').map((word, i, arr) => (
+                <span key={i} data-reveal-word style={{ opacity: 0.22, display: 'inline-block' }}>
+                    {word}
+                    {i < arr.length - 1 ? '\u00A0' : ''}
+                </span>
+            ))}
+        </>
+    );
+}
+
+export default function Welcome() {
+    const galleryWrapperRef = useRef<HTMLDivElement>(null);
+    const galleryTrackRef = useRef<HTMLDivElement>(null);
+    const galleryPositionRef = useRef(0);
+    const [isGalleryPaused, setIsGalleryPaused] = useState(false);
+    const heroHeadingRef = useWordReveal<HTMLHeadingElement>();
+    const orgsHeadingRef = useWordReveal<HTMLHeadingElement>();
+    const modulesHeadingRef = useWordReveal<HTMLHeadingElement>();
+    const rolesHeadingRef = useWordReveal<HTMLHeadingElement>();
+
+    const applyGalleryPosition = (next: number, singleSetWidth: number) => {
+        let wrapped = next;
+        if (wrapped < 0) wrapped += singleSetWidth;
+        if (wrapped >= singleSetWidth) wrapped -= singleSetWidth;
+        galleryPositionRef.current = wrapped;
+        if (galleryTrackRef.current) {
+            galleryTrackRef.current.style.transform = `translateX(-${wrapped}px)`;
+        }
+    };
+
+    const stepGallery = (direction: 1 | -1) => {
+        const wrapper = galleryWrapperRef.current;
+        const track = galleryTrackRef.current;
+        if (!wrapper || !track) return;
+        const singleSetWidth = track.scrollWidth / 2;
+        const amount = wrapper.clientWidth * 0.9;
+        applyGalleryPosition(galleryPositionRef.current + direction * amount, singleSetWidth);
     };
 
     useEffect(() => {
-        const el = galleryRef.current;
-        if (!el) return;
+        const track = galleryTrackRef.current;
+        if (!track) return;
 
         const pixelsPerSecond = 40;
         let rafId: number;
@@ -116,9 +181,8 @@ export default function Welcome() {
         const step = (time: number) => {
             if (lastTime !== null && !isGalleryPaused) {
                 const deltaSeconds = (time - lastTime) / 1000;
-                const maxScroll = el.scrollWidth - el.clientWidth;
-                const next = el.scrollLeft + pixelsPerSecond * deltaSeconds;
-                el.scrollLeft = next >= maxScroll ? 0 : next;
+                const singleSetWidth = track.scrollWidth / 2;
+                applyGalleryPosition(galleryPositionRef.current + pixelsPerSecond * deltaSeconds, singleSetWidth);
             }
             lastTime = time;
             rafId = requestAnimationFrame(step);
@@ -191,9 +255,8 @@ export default function Welcome() {
                     <div className="absolute inset-0 bg-gradient-to-r from-[#0B1226]/95 via-[#0B1226]/70 to-[#0B1226]/20" />
 
                     <div className="relative ml-48 px-8 py-16 sm:ml-48 sm:px-12 sm:py-20">
-                        <h1 className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
-                            Where the whole student council actually gets its
-                            work done.
+                        <h1 ref={heroHeadingRef} className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
+                            <RevealWords text="Where the whole student council actually gets its work done." />
                         </h1>
                         <p className="mt-6 max-w-[52ch] text-[#D3D9E8]">
                             Task boards, documents, events, voting, and concerns
@@ -239,9 +302,8 @@ export default function Welcome() {
                 {/* Orgs */}
                 <section id="orgs" className="mx-auto max-w-5xl px-7 py-18">
                     <div className="mb-10 max-w-[56ch]">
-                        <h2 className="text-3xl font-semibold">
-                            Different organizations, different needs, one
-                            system.
+                        <h2 ref={orgsHeadingRef} className="text-3xl font-semibold">
+                            <RevealWords text="Different organizations, different needs, one system." />
                         </h2>
                         <p className="mt-3 text-[#5B6478]">
                             Every org keeps its own identity and its own
@@ -250,10 +312,10 @@ export default function Welcome() {
                         </p>
                     </div>
 
-                    <div className="relative">
+                    <div ref={galleryWrapperRef} className="org-marquee-mask relative overflow-hidden">
                         <button
                             type="button"
-                            onClick={() => scrollGallery(-1)}
+                            onClick={() => stepGallery(-1)}
                             aria-label="Previous photos"
                             className="absolute top-1/2 left-0 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
                         >
@@ -261,26 +323,26 @@ export default function Welcome() {
                         </button>
 
                         <div
-                            ref={galleryRef}
+                            ref={galleryTrackRef}
                             onMouseEnter={() => setIsGalleryPaused(true)}
                             onMouseLeave={() => setIsGalleryPaused(false)}
                             onTouchStart={() => setIsGalleryPaused(true)}
                             onTouchEnd={() => setIsGalleryPaused(false)}
-                            className="flex snap-x snap-mandatory [scrollbar-width:none] gap-4 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                            className="flex w-max gap-4"
                         >
-                            {galleryImages.map((src, i) => (
+                            {[...galleryImages, ...galleryImages].map((src, i) => (
                                 <img
-                                    key={src}
+                                    key={`${src}-${i}`}
                                     src={src}
-                                    alt={`Council activity ${i + 1}`}
-                                    className="h-56 w-80 shrink-0 snap-start rounded-2xl object-cover sm:h-64 sm:w-96"
+                                    alt={`Council activity ${(i % galleryImages.length) + 1}`}
+                                    className="h-56 w-80 shrink-0 rounded-2xl object-cover sm:h-64 sm:w-96"
                                 />
                             ))}
                         </div>
 
                         <button
                             type="button"
-                            onClick={() => scrollGallery(1)}
+                            onClick={() => stepGallery(1)}
                             aria-label="Next photos"
                             className="absolute top-1/2 right-0 z-10 flex h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
                         >
@@ -301,9 +363,8 @@ export default function Welcome() {
                 >
                     <div className="mx-auto max-w-5xl px-7">
                         <div className="mb-10 max-w-[56ch]">
-                            <h2 className="text-3xl font-semibold">
-                                Everything a council does, built as one
-                                workspace.
+                            <h2 ref={modulesHeadingRef} className="text-3xl font-semibold">
+                                <RevealWords text="Everything a council does, built as one workspace." />
                             </h2>
                             <p className="mt-3 text-[#5B6478]">
                                 No more chasing files across Messenger threads
@@ -332,8 +393,8 @@ export default function Welcome() {
                 {/* Roles */}
                 <section id="roles" className="mx-auto max-w-5xl px-7 py-18">
                     <div className="mb-10 max-w-[56ch]">
-                        <h2 className="text-3xl font-semibold">
-                            One login. A dashboard built for your role.
+                        <h2 ref={rolesHeadingRef} className="text-3xl font-semibold">
+                            <RevealWords text="One login. A dashboard built for your role." />
                         </h2>
                     </div>
                     <div className="grid rounded-2xl border border-[#E1E4EA] bg-white sm:grid-cols-2">
