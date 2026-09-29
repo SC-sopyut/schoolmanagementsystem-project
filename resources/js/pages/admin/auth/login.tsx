@@ -104,7 +104,9 @@ export default function AdminLogin() {
                             disabled={processing}
                             className="mb-4 w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
                         >
-                            {processing ? 'Signing in...' : 'Sign in as Administrator'}
+                            {processing
+                                ? 'Signing in...'
+                                : 'Sign in as Administrator'}
                         </button>
 
                         <p className="text-center text-xs text-slate-500 dark:text-slate-400">

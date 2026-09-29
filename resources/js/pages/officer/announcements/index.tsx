@@ -26,7 +26,11 @@ const audienceNames: Record<string, string> = {
     everyone: 'Everyone',
 };
 
-export default function OfficerAnnouncements({ organizations, is_council_officer, announcements }: Props) {
+export default function OfficerAnnouncements({
+    organizations,
+    is_council_officer,
+    announcements,
+}: Props) {
     const form = useForm({
         title: '',
         body: '',
@@ -45,7 +49,9 @@ export default function OfficerAnnouncements({ organizations, is_council_officer
         <CouncilLayout title="Announcements">
             <div className="mb-5">
                 <h2 className="text-2xl font-bold">Announcements</h2>
-                <p className="text-sm text-[#5B6478]">Share updates with the right people.</p>
+                <p className="text-sm text-[#5B6478]">
+                    Share updates with the right people.
+                </p>
             </div>
 
             <section className="rounded-xl border border-[#E1E4EA] bg-white p-5">
@@ -58,42 +64,113 @@ export default function OfficerAnnouncements({ organizations, is_council_officer
                 <form onSubmit={submit} className="mt-4 space-y-4">
                     <label className="block text-sm font-medium">
                         Title
-                        <input value={form.data.title} onChange={(event) => form.setData('title', event.target.value)} maxLength={150} required className="mt-1.5 h-10 w-full rounded-md border border-[#D5DAE3] px-3 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
-                        {form.errors.title && <span className="mt-1 block text-xs text-red-600">{form.errors.title}</span>}
+                        <input
+                            value={form.data.title}
+                            onChange={(event) =>
+                                form.setData('title', event.target.value)
+                            }
+                            maxLength={150}
+                            required
+                            className="mt-1.5 h-10 w-full rounded-md border border-[#D5DAE3] px-3 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                        />
+                        {form.errors.title && (
+                            <span className="mt-1 block text-xs text-red-600">
+                                {form.errors.title}
+                            </span>
+                        )}
                     </label>
 
                     {is_council_officer && (
                         <label className="block text-sm font-medium">
                             Send to
-                            <select value={form.data.audience} onChange={(event) => form.setData('audience', event.target.value)} className="mt-1.5 h-10 w-full rounded-md border border-[#D5DAE3] bg-white px-3 text-sm">
-                                <option value="organization">Members of a specific organization</option>
-                                <option value="all_students">Students in every organization</option>
-                                <option value="all_officers">Officers of every organization</option>
+                            <select
+                                value={form.data.audience}
+                                onChange={(event) =>
+                                    form.setData('audience', event.target.value)
+                                }
+                                className="mt-1.5 h-10 w-full rounded-md border border-[#D5DAE3] bg-white px-3 text-sm"
+                            >
+                                <option value="organization">
+                                    Members of a specific organization
+                                </option>
+                                <option value="all_students">
+                                    Students in every organization
+                                </option>
+                                <option value="all_officers">
+                                    Officers of every organization
+                                </option>
                                 <option value="everyone">Everyone</option>
                             </select>
-                            {form.errors.audience && <span className="mt-1 block text-xs text-red-600">{form.errors.audience}</span>}
+                            {form.errors.audience && (
+                                <span className="mt-1 block text-xs text-red-600">
+                                    {form.errors.audience}
+                                </span>
+                            )}
                         </label>
                     )}
 
-                    {form.data.audience === 'organization' && is_council_officer && (
-                        <label className="block text-sm font-medium">
-                            Organization
-                            <select value={form.data.organization_id} onChange={(event) => form.setData('organization_id', event.target.value)} required className="mt-1.5 h-10 w-full rounded-md border border-[#D5DAE3] bg-white px-3 text-sm">
-                                {organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}
-                            </select>
-                            {form.errors.organization_id && <span className="mt-1 block text-xs text-red-600">{form.errors.organization_id}</span>}
-                        </label>
-                    )}
+                    {form.data.audience === 'organization' &&
+                        is_council_officer && (
+                            <label className="block text-sm font-medium">
+                                Organization
+                                <select
+                                    value={form.data.organization_id}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'organization_id',
+                                            event.target.value,
+                                        )
+                                    }
+                                    required
+                                    className="mt-1.5 h-10 w-full rounded-md border border-[#D5DAE3] bg-white px-3 text-sm"
+                                >
+                                    {organizations.map((organization) => (
+                                        <option
+                                            key={organization.id}
+                                            value={organization.id}
+                                        >
+                                            {organization.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {form.errors.organization_id && (
+                                    <span className="mt-1 block text-xs text-red-600">
+                                        {form.errors.organization_id}
+                                    </span>
+                                )}
+                            </label>
+                        )}
 
                     <label className="block text-sm font-medium">
                         Message
-                        <textarea value={form.data.body} onChange={(event) => form.setData('body', event.target.value)} maxLength={10000} rows={5} required className="mt-1.5 w-full resize-y rounded-md border border-[#D5DAE3] px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
-                        {form.errors.body && <span className="mt-1 block text-xs text-red-600">{form.errors.body}</span>}
+                        <textarea
+                            value={form.data.body}
+                            onChange={(event) =>
+                                form.setData('body', event.target.value)
+                            }
+                            maxLength={10000}
+                            rows={5}
+                            required
+                            className="mt-1.5 w-full resize-y rounded-md border border-[#D5DAE3] px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                        />
+                        {form.errors.body && (
+                            <span className="mt-1 block text-xs text-red-600">
+                                {form.errors.body}
+                            </span>
+                        )}
                     </label>
 
                     <div className="flex justify-end">
-                        <button type="submit" disabled={form.processing || organizations.length === 0} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-                            {form.processing ? 'Publishing…' : 'Publish announcement'}
+                        <button
+                            type="submit"
+                            disabled={
+                                form.processing || organizations.length === 0
+                            }
+                            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                        >
+                            {form.processing
+                                ? 'Publishing…'
+                                : 'Publish announcement'}
                         </button>
                     </div>
                 </form>
@@ -102,17 +179,37 @@ export default function OfficerAnnouncements({ organizations, is_council_officer
             <section className="mt-6">
                 <h3 className="mb-3 font-semibold">Recent announcements</h3>
                 <div className="space-y-3">
-                    {announcements.length === 0 && <p className="rounded-xl border border-[#E1E4EA] bg-white p-5 text-sm text-[#5B6478]">No announcements yet.</p>}
+                    {announcements.length === 0 && (
+                        <p className="rounded-xl border border-[#E1E4EA] bg-white p-5 text-sm text-[#5B6478]">
+                            No announcements yet.
+                        </p>
+                    )}
                     {announcements.map((announcement) => (
-                        <article key={announcement.id} className="rounded-xl border border-[#E1E4EA] bg-white p-5">
+                        <article
+                            key={announcement.id}
+                            className="rounded-xl border border-[#E1E4EA] bg-white p-5"
+                        >
                             <div className="flex flex-wrap items-start justify-between gap-2">
-                                <h4 className="font-semibold">{announcement.title}</h4>
+                                <h4 className="font-semibold">
+                                    {announcement.title}
+                                </h4>
                                 <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-                                    {announcement.audience === 'organization' ? `${audienceNames[announcement.audience]} · ${announcement.organization ?? 'Organization'}` : audienceNames[announcement.audience] ?? announcement.audience}
+                                    {announcement.audience === 'organization'
+                                        ? `${audienceNames[announcement.audience]} · ${announcement.organization ?? 'Organization'}`
+                                        : (audienceNames[
+                                              announcement.audience
+                                          ] ?? announcement.audience)}
                                 </span>
                             </div>
-                            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#344054]">{announcement.body}</p>
-                            <p className="mt-3 text-xs text-[#7B8496]">{announcement.author ?? 'Officer'} · {new Date(announcement.published_at).toLocaleString()}</p>
+                            <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-[#344054]">
+                                {announcement.body}
+                            </p>
+                            <p className="mt-3 text-xs text-[#7B8496]">
+                                {announcement.author ?? 'Officer'} ·{' '}
+                                {new Date(
+                                    announcement.published_at,
+                                ).toLocaleString()}
+                            </p>
                         </article>
                     ))}
                 </div>

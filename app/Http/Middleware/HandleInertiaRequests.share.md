@@ -1,4 +1,4 @@
-# Patch: app/Http/Middleware/HandleInertiaRequests.php  ->  share()
+# Patch: app/Http/Middleware/HandleInertiaRequests.php -> share()
 
 I don't have your HandleInertiaRequests.php, so merge these keys into the array your
 `share()` already returns (keep whatever the starter kit put there, e.g. `name`, `quote`, `sidebarOpen`).

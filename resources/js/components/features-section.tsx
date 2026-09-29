@@ -110,8 +110,12 @@ function FeatureCardGrid({ features }: { features: FeatureCard[] }) {
                         <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#C1571F]/10 text-[#C1571F]">
                             <feature.icon className="h-5 w-5" />
                         </div>
-                        <h3 className="mb-2 text-base font-semibold text-[#101B33]">{feature.title}</h3>
-                        <p className="text-sm leading-relaxed text-[#5B6478]">{feature.description}</p>
+                        <h3 className="mb-2 text-base font-semibold text-[#101B33]">
+                            {feature.title}
+                        </h3>
+                        <p className="text-sm leading-relaxed text-[#5B6478]">
+                            {feature.description}
+                        </p>
                     </Link>
                 </FadeIn>
             ))}
@@ -141,14 +145,18 @@ export function FeaturesSection() {
                 <div className="grid grid-cols-1 gap-14 lg:grid-cols-2">
                     <div>
                         <FadeIn>
-                            <h3 className="mb-6 text-lg font-semibold text-[#101B33]">For Students</h3>
+                            <h3 className="mb-6 text-lg font-semibold text-[#101B33]">
+                                For Students
+                            </h3>
                         </FadeIn>
                         <FeatureCardGrid features={studentFeatures} />
                     </div>
 
                     <div>
                         <FadeIn>
-                            <h3 className="mb-6 text-lg font-semibold text-[#101B33]">For Officers</h3>
+                            <h3 className="mb-6 text-lg font-semibold text-[#101B33]">
+                                For Officers
+                            </h3>
                         </FadeIn>
                         <FeatureCardGrid features={officerFeatures} />
                     </div>

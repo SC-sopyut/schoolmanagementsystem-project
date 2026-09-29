@@ -1,5 +1,15 @@
 import {
-    CircleAlert, Columns3, CalendarDays, FolderOpen, LayoutDashboard, Megaphone, Send, Settings, Users, Vote, Wallet,
+    CircleAlert,
+    Columns3,
+    CalendarDays,
+    FolderOpen,
+    LayoutDashboard,
+    Megaphone,
+    Send,
+    Settings,
+    Users,
+    Vote,
+    Wallet,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
@@ -9,14 +19,25 @@ import { index as officerConcerns } from '@/routes/officer/concerns';
 import { index as officerEvents } from '@/routes/officer/events';
 import { index as documents } from '@/routes/documents';
 import { dashboard as studentDashboard } from '@/routes/student';
-import { create as submitConcern, index as myConcerns } from '@/routes/student/concerns';
+import {
+    create as submitConcern,
+    index as myConcerns,
+} from '@/routes/student/concerns';
 import { index as studentEvents } from '@/routes/student/events';
 import { index as studentAnnouncements } from '@/routes/student/announcements';
 
-export type NavItem = { label: string; href: string | null; icon: ComponentType<{ className?: string }> };
+export type NavItem = {
+    label: string;
+    href: string | null;
+    icon: ComponentType<{ className?: string }>;
+};
 
 // href === null  ->  screen exists in the Figma but isn't built yet: rendered muted, not clickable.
-const settings: NavItem = { label: 'Settings', href: '/settings/profile', icon: Settings };
+const settings: NavItem = {
+    label: 'Settings',
+    href: '/settings/profile',
+    icon: Settings,
+};
 
 /** Figma: "Council Officer" sidebar. */
 export const officerNav = (): NavItem[] => [
@@ -49,6 +70,10 @@ export const studentNav = (): NavItem[] => [
     { label: 'Submit a Concern', href: submitConcern().url, icon: Send },
     { label: 'My Concerns', href: myConcerns().url, icon: CircleAlert },
     { label: 'Events', href: studentEvents().url, icon: CalendarDays },
-    { label: 'Announcements', href: studentAnnouncements().url, icon: Megaphone },
+    {
+        label: 'Announcements',
+        href: studentAnnouncements().url,
+        icon: Megaphone,
+    },
     settings,
 ];

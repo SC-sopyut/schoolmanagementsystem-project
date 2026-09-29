@@ -46,15 +46,16 @@ class ConcernController extends Controller
 
     public function store(StoreConcernRequest $request): RedirectResponse
     {
-        $this->authorize('create', [Concern::class, $request->integer('organization_id')]);
+        $data = $request->validated();
+        $this->authorize('create', [Concern::class, (int) $data['organization_id']]);
 
         $concern = Concern::create([
             'student_id' => $request->user()->id, // always stored, even when anonymous
-            'organization_id' => $request->integer('organization_id'),
-            'subject' => $request->string('subject'),
-            'category' => $request->string('category'),
-            'priority' => $request->string('priority'),
-            'body' => $request->string('body'),
+            'organization_id' => $data['organization_id'],
+            'subject' => $data['subject'],
+            'category' => $data['category'],
+            'priority' => $data['priority'],
+            'body' => $data['body'],
             'is_anonymous' => $request->boolean('is_anonymous'),
             'status' => 'submitted',
         ]);

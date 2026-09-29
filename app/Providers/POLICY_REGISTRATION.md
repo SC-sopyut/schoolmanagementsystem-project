@@ -1,11 +1,11 @@
 # Fix: register two policies explicitly (bug in the first package)
 
 Laravel picks a policy by the class of the model you pass to `authorize()`. Two policies I
-wrote in the first package take a *different* model than their name implies, so auto-discovery
+wrote in the first package take a _different_ model than their name implies, so auto-discovery
 misses them and those calls would fail with "This action is unauthorized" for everyone:
 
-- `TaskPolicy::manageBoard(User, Committee)`  -> called as `authorize('manageBoard', $committee)`
-- `VotePolicy::vote(User, Election, string)`  -> called as `authorize('vote', [$election, $position])`
+- `TaskPolicy::manageBoard(User, Committee)` -> called as `authorize('manageBoard', $committee)`
+- `VotePolicy::vote(User, Election, string)` -> called as `authorize('vote', [$election, $position])`
 
 Add to `AppServiceProvider::boot()`:
 
