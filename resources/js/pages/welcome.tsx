@@ -98,9 +98,7 @@ function useWordReveal<T extends HTMLElement>() {
     useEffect(() => {
         const container = ref.current;
         if (!container) return;
-        const words = Array.from(
-            container.querySelectorAll<HTMLElement>('[data-reveal-word]'),
-        );
+        const words = Array.from(container.querySelectorAll<HTMLElement>('[data-reveal-word]'));
         if (words.length === 0) return;
 
         let rafId: number;
@@ -161,7 +159,7 @@ function FadeIn({
             className={className}
             style={{
                 opacity: visible ? 1 : 0,
-                transform: visible ? 'translateY(0)' : 'translateY(20px)',
+                transform: visible ? undefined : 'translateY(20px)',
                 transition: `opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s`,
             }}
         >
@@ -174,11 +172,7 @@ function RevealWords({ text }: { text: string }) {
     return (
         <>
             {text.split(' ').map((word, i, arr) => (
-                <span
-                    key={i}
-                    data-reveal-word
-                    style={{ opacity: 0.22, display: 'inline-block' }}
-                >
+                <span key={i} data-reveal-word style={{ opacity: 0.22, display: 'inline-block' }}>
                     {word}
                     {i < arr.length - 1 ? ' ' : ''}
                 </span>
@@ -186,6 +180,7 @@ function RevealWords({ text }: { text: string }) {
         </>
     );
 }
+
 
 export default function Welcome() {
     const galleryWrapperRef = useRef<HTMLDivElement>(null);
@@ -213,10 +208,7 @@ export default function Welcome() {
         if (!wrapper || !track) return;
         const singleSetWidth = track.scrollWidth / 2;
         const amount = wrapper.clientWidth * 0.9;
-        applyGalleryPosition(
-            galleryPositionRef.current + direction * amount,
-            singleSetWidth,
-        );
+        applyGalleryPosition(galleryPositionRef.current + direction * amount, singleSetWidth);
     };
 
     useEffect(() => {
@@ -231,10 +223,7 @@ export default function Welcome() {
             if (lastTime !== null && !isGalleryPaused) {
                 const deltaSeconds = (time - lastTime) / 1000;
                 const singleSetWidth = track.scrollWidth / 2;
-                applyGalleryPosition(
-                    galleryPositionRef.current + pixelsPerSecond * deltaSeconds,
-                    singleSetWidth,
-                );
+                applyGalleryPosition(galleryPositionRef.current + pixelsPerSecond * deltaSeconds, singleSetWidth);
             }
             lastTime = time;
             rafId = requestAnimationFrame(step);
@@ -249,6 +238,9 @@ export default function Welcome() {
             <Head title="CouncilForge" />
 
             <style>{`
+                html {
+                    scroll-behavior: smooth;
+                }
                 @keyframes org-marquee {
                     from { transform: translateX(0); }
                     to { transform: translateX(-50%); }
@@ -275,9 +267,9 @@ export default function Welcome() {
                             CouncilForge
                         </div>
                         <nav className="hidden gap-7 text-sm text-[#B9C2D6] sm:flex">
-                            <a href="#modules">Modules</a>
-                            <a href="#orgs">Organizations</a>
-                            <a href="#roles">For students &amp; officers</a>
+                            <a href="#modules" className="transition-colors hover:text-white">Modules</a>
+                            <a href="#orgs" className="transition-colors hover:text-white">Organizations</a>
+                            <a href="#roles" className="transition-colors hover:text-white">For students &amp; officers</a>
                         </nav>
                         <div className="flex items-center gap-4">
                             <Link
@@ -307,10 +299,7 @@ export default function Welcome() {
                     <div className="absolute inset-0 bg-gradient-to-r from-[#0B1226]/95 via-[#0B1226]/70 to-[#0B1226]/20" />
 
                     <div className="relative ml-48 px-8 py-16 sm:ml-48 sm:px-12 sm:py-20">
-                        <h1
-                            ref={heroHeadingRef}
-                            className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl"
-                        >
+                        <h1 ref={heroHeadingRef} className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
                             <RevealWords text="Where the whole student council actually gets its work done." />
                         </h1>
                         <p className="mt-6 max-w-[52ch] text-[#D3D9E8]">
@@ -355,12 +344,9 @@ export default function Welcome() {
                 </section>
 
                 {/* Orgs */}
-                <section id="orgs" className="mx-auto max-w-5xl px-7 py-18">
+                <section id="orgs" className="mx-auto max-w-5xl scroll-mt-24 px-7 py-18">
                     <div className="mb-10 max-w-[56ch]">
-                        <h2
-                            ref={orgsHeadingRef}
-                            className="text-3xl font-semibold"
-                        >
+                        <h2 ref={orgsHeadingRef} className="text-3xl font-semibold">
                             <RevealWords text="Different organizations, different needs, one system." />
                         </h2>
                         <p className="mt-3 text-[#5B6478]">
@@ -371,10 +357,7 @@ export default function Welcome() {
                     </div>
 
                     <FadeIn>
-                        <div
-                            ref={galleryWrapperRef}
-                            className="org-marquee-mask relative overflow-hidden"
-                        >
+                        <div ref={galleryWrapperRef} className="org-marquee-mask relative overflow-hidden">
                             <button
                                 type="button"
                                 onClick={() => stepGallery(-1)}
@@ -392,16 +375,14 @@ export default function Welcome() {
                                 onTouchEnd={() => setIsGalleryPaused(false)}
                                 className="flex w-max gap-4"
                             >
-                                {[...galleryImages, ...galleryImages].map(
-                                    (src, i) => (
-                                        <img
-                                            key={`${src}-${i}`}
-                                            src={src}
-                                            alt={`Council activity ${(i % galleryImages.length) + 1}`}
-                                            className="h-56 w-80 shrink-0 rounded-2xl object-cover sm:h-64 sm:w-96"
-                                        />
-                                    ),
-                                )}
+                                {[...galleryImages, ...galleryImages].map((src, i) => (
+                                    <img
+                                        key={`${src}-${i}`}
+                                        src={src}
+                                        alt={`Council activity ${(i % galleryImages.length) + 1}`}
+                                        className="h-56 w-80 shrink-0 rounded-2xl object-cover sm:h-64 sm:w-96"
+                                    />
+                                ))}
                             </div>
 
                             <button
@@ -424,14 +405,11 @@ export default function Welcome() {
                 {/* Modules */}
                 <section
                     id="modules"
-                    className="border-y border-[#E1E4EA] bg-white py-18"
+                    className="scroll-mt-24 border-y border-[#E1E4EA] bg-white py-18"
                 >
                     <div className="mx-auto max-w-5xl px-7">
                         <div className="mb-10 max-w-[56ch]">
-                            <h2
-                                ref={modulesHeadingRef}
-                                className="text-3xl font-semibold"
-                            >
+                            <h2 ref={modulesHeadingRef} className="text-3xl font-semibold">
                                 <RevealWords text="Everything a council does, built as one workspace." />
                             </h2>
                             <p className="mt-3 text-[#5B6478]">
@@ -444,9 +422,9 @@ export default function Welcome() {
                                 <FadeIn
                                     key={f.title}
                                     delay={i * 0.08}
-                                    className="rounded-xl border border-[#E1E4EA] p-6"
+                                    className="group cursor-pointer rounded-xl border border-[#E1E4EA] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#C1571F]/40 hover:shadow-lg"
                                 >
-                                    <div className="mb-3.5 flex h-8.5 w-8.5 items-center justify-center rounded-lg bg-[#F4E3D6] font-semibold text-[#C1571F]">
+                                    <div className="mb-3.5 flex h-8.5 w-8.5 items-center justify-center rounded-lg bg-[#F4E3D6] font-semibold text-[#C1571F] transition-colors duration-300 group-hover:bg-[#C1571F] group-hover:text-white">
                                         {f.glyph}
                                     </div>
                                     <h3 className="font-semibold">{f.title}</h3>
@@ -460,12 +438,9 @@ export default function Welcome() {
                 </section>
 
                 {/* Roles */}
-                <section id="roles" className="mx-auto max-w-5xl px-7 py-18">
+                <section id="roles" className="mx-auto max-w-5xl scroll-mt-24 px-7 py-18">
                     <div className="mb-10 max-w-[56ch]">
-                        <h2
-                            ref={rolesHeadingRef}
-                            className="text-3xl font-semibold"
-                        >
+                        <h2 ref={rolesHeadingRef} className="text-3xl font-semibold">
                             <RevealWords text="One login. A dashboard built for your role." />
                         </h2>
                     </div>
