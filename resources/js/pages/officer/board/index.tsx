@@ -235,7 +235,8 @@ function NewTask({
     function submit(e: React.FormEvent) {
         e.preventDefault();
         // committee_id lives in the URL (route-model bound + policy-checked), not the body.
-        form.transform(({ committee_id, ...rest }) => rest).post(
+        // eslint-disable-next-line no-unused-vars
+        form.transform(({ committee_id: _committee_id, ...rest }) => rest).post(
             storeTask(Number(form.data.committee_id)).url,
             {
                 preserveScroll: true,
