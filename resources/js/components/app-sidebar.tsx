@@ -43,9 +43,10 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton className="" size="lg" asChild>
                             <Link href={dashboard()} prefetch>
                                 <AppLogo />
+                                <h1 className="">CouncilForge</h1>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

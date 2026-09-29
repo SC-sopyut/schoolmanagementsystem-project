@@ -4,11 +4,20 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
+import CouncilLayout from '@/layouts/council-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, type ReactNode } from 'react';
 import { router } from '@inertiajs/react';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+function CouncilSettingsLayout({ children }: { children: ReactNode }) {
+    return (
+        <CouncilLayout title="Settings">
+            <SettingsLayout>{children}</SettingsLayout>
+        </CouncilLayout>
+    );
+}
 
 function PageLoadingOverlay() {
     const [visible, setVisible] = useState(false);
@@ -76,13 +85,22 @@ void createInertiaApp({
             case name === 'auth/register':
             case name === 'auth/forgot-password':
             case name === 'auth/reset-password':
+            case name === 'admin/auth/login':
+            case name === 'admin/auth/two-factor-challenge':
+            case name === 'admin/dashboard':
+                return null;
+
+            case name.startsWith('student/') ||
+                name.startsWith('officer/') ||
+                name.startsWith('president/') ||
+                name.startsWith('documents/'):
                 return null;
 
             case name.startsWith('auth/'):
                 return AuthLayout;
 
             case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
+                return CouncilSettingsLayout;
 
             default:
                 return AppLayout;
