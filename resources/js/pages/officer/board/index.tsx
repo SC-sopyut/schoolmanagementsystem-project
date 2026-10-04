@@ -31,7 +31,12 @@ type Task = {
 };
 type Props = {
     columns: Record<string, Task[]>;
-    committees: { id: number; name: string; organization_id: number; organization: string | null }[];
+    committees: {
+        id: number;
+        name: string;
+        organization_id: number;
+        organization: string | null;
+    }[];
     assignees: { id: number; name: string; organization_id: number }[];
     can_manage_tasks: boolean;
     task_authority_scope: string;
@@ -45,7 +50,13 @@ const COLS: [string, string][] = [
     ['done', 'Done'],
 ];
 
-export default function Board({ columns, committees, assignees, can_manage_tasks, task_authority_scope }: Props) {
+export default function Board({
+    columns,
+    committees,
+    assignees,
+    can_manage_tasks,
+    task_authority_scope,
+}: Props) {
     const [cols, setCols] = useState(columns);
     const [priority, setPriority] = useState('all');
     const [assignee, setAssignee] = useState('all');
@@ -89,8 +100,25 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
     return (
         <CouncilLayout title="Kanban Board">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E1E4EA] bg-white p-4">
-                <div><h2 className="font-semibold">Officer tasking</h2><p className="mt-1 text-xs text-[#5B6478]">{can_manage_tasks ? `Assign work to organization members and officers within ${task_authority_scope}.` : 'You can update tasks assigned to you. Presidents and VPs Internal/External manage assignments.'}</p></div>
-                {can_manage_tasks && <button type="button" onClick={() => setOpen(true)} disabled={committees.length === 0} className={btnPrimary + ' disabled:opacity-50'}><Plus className="h-4 w-4"/>Assign task</button>}
+                <div>
+                    <h2 className="font-semibold">Officer tasking</h2>
+                    <p className="mt-1 text-xs text-[#5B6478]">
+                        {can_manage_tasks
+                            ? `Assign work to organization members and officers within ${task_authority_scope}.`
+                            : 'You can update tasks assigned to you. Presidents and VPs Internal/External manage assignments.'}
+                    </p>
+                </div>
+                {can_manage_tasks && (
+                    <button
+                        type="button"
+                        onClick={() => setOpen(true)}
+                        disabled={committees.length === 0}
+                        className={btnPrimary + ' disabled:opacity-50'}
+                    >
+                        <Plus className="h-4 w-4" />
+                        Assign task
+                    </button>
+                )}
             </div>
             <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="rounded-lg border border-[#E1E4EA] bg-white px-3 py-1.5 text-xs">
@@ -151,7 +179,9 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
                                                     tone={toneFor(t.committee)}
                                                     dot
                                                 >
-                                                    {t.organization ? `${t.organization} · ${t.committee}` : t.committee}
+                                                    {t.organization
+                                                        ? `${t.organization} · ${t.committee}`
+                                                        : t.committee}
                                                 </Pill>
                                             ) : (
                                                 <span />
@@ -198,12 +228,14 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
                 })}
             </div>
 
-            {can_manage_tasks && <NewTask
-                open={open}
-                onClose={() => setOpen(false)}
-                committees={committees}
-                assignees={assignees}
-            />}
+            {can_manage_tasks && (
+                <NewTask
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    committees={committees}
+                    assignees={assignees}
+                />
+            )}
         </CouncilLayout>
     );
 }
@@ -238,21 +270,20 @@ function NewTask({
         // eslint-disable-next-line no-unused-vars
         form.transform(({ committee_id: _committee_id, ...rest }) => rest);
         form.post(storeTask(Number(form.data.committee_id)).url, {
-                preserveScroll: true,
-                onSuccess: () => {
-                    form.reset(
-                        'title',
-                        'description',
-                        'assigned_to',
-                        'due_date',
-                    );
-                    onClose();
-                },
-            });
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset('title', 'description', 'assigned_to', 'due_date');
+                onClose();
+            },
+        });
     }
 
     return (
-        <Modal open={open} onClose={onClose} title="Assign Task to Officer or Member">
+        <Modal
+            open={open}
+            onClose={onClose}
+            title="Assign Task to Officer or Member"
+        >
             <form onSubmit={submit} className="space-y-3">
                 <Field label="Committee" error={form.errors.committee_id}>
                     <select
@@ -265,7 +296,9 @@ function NewTask({
                     >
                         {committees.map((c) => (
                             <option key={c.id} value={c.id}>
-                                {c.organization ? `${c.organization} · ${c.name}` : c.name}
+                                {c.organization
+                                    ? `${c.organization} · ${c.name}`
+                                    : c.name}
                             </option>
                         ))}
                     </select>

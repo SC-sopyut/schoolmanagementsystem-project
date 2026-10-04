@@ -1,5 +1,7 @@
 import CouncilLayout from '@/layouts/council-layout';
-import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
+import DeletedUploads, {
+    type DeletedUpload,
+} from '@/components/council/deleted-uploads';
 import {
     Avatar,
     Card,
@@ -13,7 +15,15 @@ import {
 } from '@/components/council/ui';
 import { download, index as documentsIndex, store } from '@/routes/documents';
 import { Link, router, useForm } from '@inertiajs/react';
-import { Download, FileText, Folder, Presentation, Sheet, Upload, Trash2 } from 'lucide-react';
+import {
+    Download,
+    FileText,
+    Folder,
+    Presentation,
+    Sheet,
+    Upload,
+    Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 
 type Doc = {
@@ -184,13 +194,15 @@ export default function Documents({
                                                 })}
                                                 className="flex items-center gap-2 font-medium"
                                             >
-                                                {['ppt', 'pptx'].includes(d.file_type) ? (
+                                                {['ppt', 'pptx'].includes(
+                                                    d.file_type,
+                                                ) ? (
                                                     <Presentation className="h-4 w-4 text-orange-600" />
                                                 ) : [
-                                                    'xls',
-                                                    'xlsx',
-                                                    'csv',
-                                                ].includes(d.file_type) ? (
+                                                      'xls',
+                                                      'xlsx',
+                                                      'csv',
+                                                  ].includes(d.file_type) ? (
                                                     <Sheet className="h-4 w-4 text-emerald-600" />
                                                 ) : (
                                                     <FileText className="h-4 w-4 text-blue-600" />
@@ -277,8 +289,100 @@ export default function Documents({
                             </li>
                         ))}
                     </ul>
-                    {selected && <div className="mt-6 border-t border-[#E1E4EA] pt-4"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-semibold">Preview</h3><a href={selected.preview_url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-600 hover:underline">Open full preview</a></div>{['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'txt'].includes(selected.file_type) ? <iframe title={`Preview of ${selected.name}`} src={selected.preview_url} className="h-[28rem] w-full rounded-lg border border-[#E1E4EA] bg-white" /> : <div className="flex h-36 flex-col items-center justify-center rounded-lg border border-dashed border-[#E1E4EA] text-center text-xs text-[#5B6478]"><FileText className="mb-2 h-6 w-6"/>Preview is not available for this file type.<a href={download(selected.id).url} className="mt-2 text-blue-600">Download to view</a></div>}
-                    {selected.can_manage && <div className="mt-3 space-y-2"><label className="block text-xs font-medium text-[#5B6478]">Access</label><select aria-label="Document access" className={inputCls} value={selected.access_level} onChange={(e) => router.patch(`/documents/${selected.id}/access`, { access_level: e.target.value }, { preserveScroll: true })}><option value="org_only">Members only</option><option value="public">Public access</option></select><button type="button" onClick={() => { if (window.confirm(`Delete ${selected.name} and all its versions?`)) router.delete(`/documents/${selected.id}`); }} className="flex items-center gap-2 text-xs font-medium text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4"/>Delete document</button></div>}</div>}
+                    {selected && (
+                        <div className="mt-6 border-t border-[#E1E4EA] pt-4">
+                            <div className="mb-3 flex items-center justify-between">
+                                <h3 className="text-sm font-semibold">
+                                    Preview
+                                </h3>
+                                <a
+                                    href={selected.preview_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-xs font-semibold text-blue-600 hover:underline"
+                                >
+                                    Open full preview
+                                </a>
+                            </div>
+                            {[
+                                'pdf',
+                                'png',
+                                'jpg',
+                                'jpeg',
+                                'doc',
+                                'docx',
+                                'xls',
+                                'xlsx',
+                                'ppt',
+                                'pptx',
+                                'csv',
+                                'txt',
+                            ].includes(selected.file_type) ? (
+                                <iframe
+                                    title={`Preview of ${selected.name}`}
+                                    src={selected.preview_url}
+                                    className="h-[28rem] w-full rounded-lg border border-[#E1E4EA] bg-white"
+                                />
+                            ) : (
+                                <div className="flex h-36 flex-col items-center justify-center rounded-lg border border-dashed border-[#E1E4EA] text-center text-xs text-[#5B6478]">
+                                    <FileText className="mb-2 h-6 w-6" />
+                                    Preview is not available for this file type.
+                                    <a
+                                        href={download(selected.id).url}
+                                        className="mt-2 text-blue-600"
+                                    >
+                                        Download to view
+                                    </a>
+                                </div>
+                            )}
+                            {selected.can_manage && (
+                                <div className="mt-3 space-y-2">
+                                    <label className="block text-xs font-medium text-[#5B6478]">
+                                        Access
+                                    </label>
+                                    <select
+                                        aria-label="Document access"
+                                        className={inputCls}
+                                        value={selected.access_level}
+                                        onChange={(e) =>
+                                            router.patch(
+                                                `/documents/${selected.id}/access`,
+                                                {
+                                                    access_level:
+                                                        e.target.value,
+                                                },
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                    >
+                                        <option value="org_only">
+                                            Members only
+                                        </option>
+                                        <option value="public">
+                                            Public access
+                                        </option>
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (
+                                                window.confirm(
+                                                    `Delete ${selected.name} and all its versions?`,
+                                                )
+                                            )
+                                                router.delete(
+                                                    `/documents/${selected.id}`,
+                                                );
+                                        }}
+                                        className="flex items-center gap-2 text-xs font-medium text-red-600 hover:text-red-700"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                        Delete document
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </Card>
             </div>
 
