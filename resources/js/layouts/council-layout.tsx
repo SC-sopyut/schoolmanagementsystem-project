@@ -1,16 +1,30 @@
 import { Avatar } from '@/components/council/ui';
 import { officerNav, presidentNav, studentNav } from '@/components/council/nav';
+import { AppShell } from '@/components/app-shell';
+import { AppearanceToggle } from '@/components/appearance-toggle';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarInset,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
     ChevronDown,
     LogOut,
-    Menu,
     Search,
     Settings,
     X,
 } from 'lucide-react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,6 +37,7 @@ import {
 type Shared = {
     auth: {
         user: { name: string; email: string };
+        roles: { label: string; organization: string | null }[];
         officer: null | {
             label: string;
             organization: string;
@@ -72,7 +87,6 @@ export default function CouncilLayout({
 }) {
     const { auth, flash, notifications } = usePage<Shared>().props;
     const { url } = usePage();
-    const [open, setOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const notificationsRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
@@ -169,86 +183,70 @@ export default function CouncilLayout({
         notifications.concern_updates.length;
 
     return (
-        <div className="flex min-h-screen bg-[#F5F6F8] text-[#101B33]">
+        <div
+            className="min-h-svh bg-[#F5F6F8] text-[#101B33]"
+            style={{
+                '--sidebar': '#0c351d',
+                '--sidebar-foreground': '#d8e9d2',
+                '--sidebar-accent': '#155a2b',
+                '--sidebar-accent-foreground': '#FFFFFF',
+                '--sidebar-border': '#285037',
+                '--sidebar-primary': '#FFFFFF',
+                '--sidebar-primary-foreground': '#0c351d',
+                '--sidebar-ring': '#72bd79',
+            } as CSSProperties}
+        >
             <Head title={title} />
+            <AppShell variant="sidebar">
+                <Sidebar collapsible="icon" variant="sidebar">
+                    <SidebarHeader>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild size="lg" tooltip="CouncilForge">
+                                    <Link href={nav[0]?.href ?? '/dashboard'}>
+                                        <img src="/images/councilforge-logo.png" alt="" className="size-8 rounded-md object-contain" />
+                                        <span className="grid text-left leading-tight">
+                                            <span className="font-semibold text-white">CouncilForge</span>
+                                            <span className="text-[10px] tracking-wider text-slate-400">CIVIC TECH SUITE</span>
+                                        </span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarHeader>
+                    <SidebarContent>
+                        <SidebarGroup>
+                            <SidebarGroupLabel className="text-slate-400">{officer ? (officer.is_council ? 'Student Council' : officer.organization) : 'Student Portal'}</SidebarGroupLabel>
+                            <SidebarMenu>
+                                {nav.map((item) => {
+                                    const active = item.href !== null
+                                        && url.split('?')[0] === item.href.split('?')[0]
+                                        && (!item.href.includes('?') || url.includes(item.href.split('?')[1]));
 
-            {open && (
-                <div
-                    className="fixed inset-0 z-30 bg-black/40 lg:hidden"
-                    onClick={() => setOpen(false)}
-                />
-            )}
-            <aside
-                className={`fixed inset-y-0 left-0 z-40 flex w-56 flex-col bg-[#101B33] p-3 transition-transform lg:static lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
-            >
-                <div className="flex items-center gap-2 px-2 py-3">
-                    <img
-                        src="/images/councilforge-logo.png"
-                        alt=""
-                        className="h-9 w-9 rounded-lg object-contain"
-                    />
-                    <div>
-                        <p className="text-sm leading-tight font-bold text-white">
-                            CouncilForge
-                        </p>
-                        <p className="text-[9px] tracking-widest text-slate-400">
-                            CIVIC TECH SUITE
-                        </p>
-                    </div>
-                </div>
-
-                <nav className="mt-4 flex-1 space-y-0.5">
-                    {nav.map((item) => {
-                        const active =
-                            item.href !== null &&
-                            url.split('?')[0] === item.href.split('?')[0] &&
-                            (!item.href.includes('?') ||
-                                url.includes(item.href.split('?')[1]));
-                        const base =
-                            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm';
-                        return item.href ? (
-                            <Link
-                                key={item.label}
-                                href={item.href}
-                                onClick={() => setOpen(false)}
-                                className={`${base} ${active ? 'bg-white/10 font-semibold text-white' : 'text-slate-300 hover:bg-white/5'}`}
-                            >
-                                <item.icon className="h-4 w-4" /> {item.label}
-                            </Link>
-                        ) : (
-                            <span
-                                key={item.label}
-                                title="Coming soon"
-                                className={`${base} cursor-not-allowed text-slate-500`}
-                            >
-                                <item.icon className="h-4 w-4" /> {item.label}
-                            </span>
-                        );
-                    })}
-                </nav>
-
-                <div className="flex items-center gap-2 border-t border-white/10 px-2 pt-3">
-                    <Avatar name={auth.user.name} size={32} />
-                    <div className="min-w-0">
-                        <p className="truncate text-xs font-semibold text-white">
-                            {auth.user.name}
-                        </p>
-                        <p className="truncate text-[10px] text-slate-400">
-                            {subtitle}
-                        </p>
-                    </div>
-                </div>
-            </aside>
-
-            <div className="flex min-w-0 flex-1 flex-col">
+                                    return <SidebarMenuItem key={item.label}>
+                                        {item.href ? <SidebarMenuButton asChild isActive={active} tooltip={{ children: item.label }}>
+                                            <Link href={item.href}><item.icon/><span>{item.label}</span></Link>
+                                        </SidebarMenuButton> : <SidebarMenuButton disabled title="Coming soon" tooltip={{ children: item.label }}>
+                                            <item.icon/><span>{item.label}</span>
+                                        </SidebarMenuButton>}
+                                    </SidebarMenuItem>;
+                                })}
+                            </SidebarMenu>
+                        </SidebarGroup>
+                    </SidebarContent>
+                    <SidebarFooter>
+                        <div className="flex items-center gap-2 border-t border-white/10 px-2 pt-3">
+                            <Avatar name={auth.user.name} size={32}/>
+                            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+                                <p className="truncate text-xs font-semibold text-white">{auth.user.name}</p>
+                                <p className="truncate text-[10px] text-slate-400">{subtitle}</p>
+                            </div>
+                        </div>
+                    </SidebarFooter>
+                </Sidebar>
+                <SidebarInset className="min-w-0 overflow-x-clip bg-[#F5F6F8]">
                 <header className="flex items-center gap-3 border-b border-[#E1E4EA] bg-white px-4 py-3 sm:px-6">
-                    <button
-                        className="lg:hidden"
-                        onClick={() => setOpen(true)}
-                        aria-label="Open menu"
-                    >
-                        <Menu className="h-5 w-5" />
-                    </button>
+                    <SidebarTrigger className="-ml-1" />
                     <h1 className="text-sm font-semibold sm:text-base">
                         {title}
                     </h1>
@@ -260,6 +258,7 @@ export default function CouncilLayout({
                         )}
                     </span>
                     <div className="ml-auto flex items-center gap-3">
+                        <AppearanceToggle />
                         {/* Search isn't wired to anything yet - shown for design fidelity only. */}
                         <div
                             ref={searchRef}
@@ -459,17 +458,13 @@ export default function CouncilLayout({
                                     <p className="text-xs text-[#5B6478]">
                                         {auth.user.email}
                                     </p>
-                                    {officer && (
-                                        <p className="mt-2 text-xs font-medium text-[#101B33]">
-                                            {officer.position || 'Officer'} ·{' '}
-                                            {officer.organization}
-                                        </p>
-                                    )}
-                                    {!officer && (
-                                        <p className="mt-2 text-xs text-[#5B6478]">
-                                            Student
-                                        </p>
-                                    )}
+                                    <div className="mt-2 space-y-1">
+                                        {auth.roles.map((role, index) => (
+                                            <p key={`${role.label}-${role.organization ?? 'student'}-${index}`} className="text-xs font-medium text-[#101B33]">
+                                                {role.label}{role.organization ? ` · ${role.organization}` : ''}
+                                            </p>
+                                        ))}
+                                    </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
@@ -492,13 +487,14 @@ export default function CouncilLayout({
 
                 <main className="flex-1 p-4 sm:p-6">
                     {flash?.success && (
-                        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
+                        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-600">
                             {flash.success}
                         </div>
                     )}
                     {children}
                 </main>
-            </div>
+                </SidebarInset>
+            </AppShell>
         </div>
     );
 }

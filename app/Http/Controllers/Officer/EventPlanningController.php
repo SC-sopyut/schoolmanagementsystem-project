@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Officer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Officer\StoreBudgetItemRequest;
 use App\Http\Requests\Officer\StoreEventRequest;
+use App\Models\AuditLog;
 use App\Models\Election;
 use App\Models\Event;
 use App\Models\EventChecklistItem;
@@ -93,6 +94,7 @@ class EventPlanningController extends Controller
         });
 
         FeedItem::record($request->user(), $event->organization_id, "planned event \"{$event->title}\"");
+        AuditLog::create(['actor_type' => $request->user()->getMorphClass(), 'actor_id' => $request->user()->id, 'action' => 'event.planned', 'subject_type' => Event::class, 'subject_id' => $event->id, 'organization_id' => $event->organization_id, 'metadata' => ['title' => $event->title, 'starts_at' => $event->starts_at], 'ip_address' => $request->ip()]);
 
         return redirect()->route('officer.events.index')->with('success', 'Event planned.');
     }
@@ -101,6 +103,7 @@ class EventPlanningController extends Controller
     {
         $this->authorize('managePlanning', $event);
         $event->budgetItems()->create($request->validated());
+        AuditLog::create(['actor_type' => $request->user()->getMorphClass(), 'actor_id' => $request->user()->id, 'action' => 'event.budget_item_added', 'subject_type' => Event::class, 'subject_id' => $event->id, 'organization_id' => $event->organization_id, 'metadata' => ['label' => $request->validated('label')], 'ip_address' => $request->ip()]);
 
         return back();
     }
@@ -110,6 +113,7 @@ class EventPlanningController extends Controller
         $this->authorize('managePlanning', $event);
         abort_unless($checklistItem->event_id === $event->id, 404);
         $checklistItem->update(['is_done' => ! $checklistItem->is_done]);
+        AuditLog::create(['actor_type' => request()->user()->getMorphClass(), 'actor_id' => request()->user()->id, 'action' => 'event.checklist_updated', 'subject_type' => Event::class, 'subject_id' => $event->id, 'organization_id' => $event->organization_id, 'metadata' => ['item' => $checklistItem->label, 'is_done' => $checklistItem->is_done], 'ip_address' => request()->ip()]);
 
         return back();
     }

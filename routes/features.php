@@ -12,8 +12,10 @@
 
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Officer;
+use App\Http\Controllers\Officer\BudgetController;
+use App\Http\Controllers\Officer\MembersController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Student;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +28,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
         Route::post('documents/folders/{folder}', [DocumentController::class, 'store'])->name('documents.store');
         Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+        Route::get('documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
+        Route::patch('documents/{document}/access', [DocumentController::class, 'updateAccess'])->name('documents.access');
+        Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
     });
 
     // ---------------- Students (any authenticated user) ----------------
@@ -50,6 +55,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ---------------- Officers (requires an `officers` row) ----------------
     Route::middleware('is_officer')->prefix('officer')->name('officer.')->group(function () {
         Route::get('dashboard', Officer\DashboardController::class)->name('dashboard');
+        Route::get('budget', BudgetController::class)->name('budget.index');
+        Route::post('budget', [BudgetController::class, 'store'])->name('budget.store');
+        Route::get('members', [MembersController::class, 'index'])->name('members.index');
+        Route::post('members', [MembersController::class, 'store'])->name('members.store');
         Route::get('announcements', [Officer\AnnouncementController::class, 'index'])->name('announcements.index');
         Route::post('announcements', [Officer\AnnouncementController::class, 'store'])->name('announcements.store');
 

@@ -5,7 +5,7 @@ export default function AppLogoIcon(
 ) {
     return (
         <img
-            src="/images/councilforge-logo.png"
+            src="/images/ssc.png"
             alt="CouncilForge"
             className="h-12 w-12"
             {...props}

@@ -1,4 +1,6 @@
 import CouncilLayout from '@/layouts/council-layout';
+import OfficerAnalytics from '@/components/council/officer-analytics';
+import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
 import {
     Card,
     Avatar,
@@ -15,6 +17,7 @@ import { CalendarDays, CircleAlert, ListChecks, Users } from 'lucide-react';
 
 type Props = {
     label: string;
+    analytics: { tasks_by_status: { status: string; count: number }[]; concerns_by_status: { status: string; count: number }[]; monthly_activity: { month: string; key: string; tasks: number; concerns: number }[] };
     today: string;
     stats: {
         active_tasks: number;
@@ -45,6 +48,7 @@ type Props = {
         message: string;
         created_at: string;
     }[];
+    deleted_uploads: DeletedUpload[];
     user?: { name: string };
 };
 
@@ -58,12 +62,14 @@ const STATUS: Record<string, { label: string; tone: Tone }> = {
 
 export default function OfficerDashboard({
     label,
+    analytics,
     today,
     stats,
     high_priority_tasks,
     upcoming_events,
     upcoming_events_count,
     recent_actions,
+    deleted_uploads,
 }: Props) {
     const next = upcoming_events[0];
     return (
@@ -122,6 +128,7 @@ export default function OfficerDashboard({
                     sub={`Across ${stats.organizations} organization${stats.organizations === 1 ? '' : 's'}`}
                 />
             </div>
+            <OfficerAnalytics {...analytics} />
 
             <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
                 <Card className="p-5 lg:col-span-2">
@@ -224,6 +231,9 @@ export default function OfficerDashboard({
                         </ul>
                     </Card>
                 </div>
+            </div>
+            <div className="mt-5">
+                <DeletedUploads uploads={deleted_uploads} />
             </div>
         </CouncilLayout>
     );

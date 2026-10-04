@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { login, register } from '@/routes';
+import { AppearanceToggle } from '@/components/appearance-toggle';
 
 const orgs = [
     {
@@ -35,7 +36,7 @@ const orgs = [
         name: 'Campus Ministry',
         tag: 'Faith & formation',
         color: 'bg-[#D9DCE3]',
-        text: 'text-[#161F33]',
+        text: 'text-[#101B33]',
         logo: '/images/awaken.png',
     },
     {
@@ -54,41 +55,42 @@ const orgs = [
 //     { num: '142', label: 'Members across all orgs' },
 // ];
 
-const galleryImages = Array.from(
-    { length: 9 },
-    (_, i) => `/images/${i + 1}.jpg`,
-);
-
 const features = [
     {
         glyph: '◧',
         title: 'Committee task boards',
         body: 'Kanban boards per committee, with deadlines and assignees everyone can see.',
+        detail: 'Give each committee a shared board for organizing work. Officers can break plans into tasks, assign owners, set deadlines, and follow progress in one place.',
     },
     {
         glyph: '▤',
         title: 'Document repository',
         body: "Version history and folder permissions per committee, so drafts don't get lost.",
+        detail: 'Keep committee files organized in shared folders. Version history helps members follow changes, while permissions keep documents available to the right people.',
     },
     {
         glyph: '◔',
         title: 'Event planning',
         body: 'Budgets, checklists, and attendance tracking, from proposal to wrap-up.',
+        detail: 'Plan an event from its initial proposal through completion. Keep the budget, preparation checklist, and attendance information together for the team.',
     },
     {
         glyph: '◈',
         title: 'Voting & polling',
         body: 'Run internal decisions and elections with results members can trust.',
+        detail: 'Create polls for organization decisions and elections, collect member votes, and share the outcome with the community.',
     },
     {
         glyph: '◫',
         title: 'Concerns routing',
         body: 'Members raise concerns; officers review before anything reaches the board.',
+        detail: 'Provide members with a clear channel to raise concerns. Officers can review each submission and route it to the appropriate board for follow-up.',
     },
     {
         glyph: '◱',
         title: 'Officer directory',
         body: 'Roles, terms, and contact info for every organization, always current.',
+        detail: 'Help members find the right people by keeping officer roles, terms of service, and contact details together for each organization.',
     },
 ];
 
@@ -188,61 +190,24 @@ function RevealWords({ text }: { text: string }) {
 }
 
 export default function Welcome() {
-    const galleryWrapperRef = useRef<HTMLDivElement>(null);
-    const galleryTrackRef = useRef<HTMLDivElement>(null);
-    const galleryPositionRef = useRef(0);
-    const [isGalleryPaused, setIsGalleryPaused] = useState(false);
+    const [selectedOrg, setSelectedOrg] = useState<(typeof orgs)[number] | null>(null);
+    const [selectedFeature, setSelectedFeature] = useState<(typeof features)[number] | null>(null);
     const heroHeadingRef = useWordReveal<HTMLHeadingElement>();
     const orgsHeadingRef = useWordReveal<HTMLHeadingElement>();
     const modulesHeadingRef = useWordReveal<HTMLHeadingElement>();
     const rolesHeadingRef = useWordReveal<HTMLHeadingElement>();
 
-    const applyGalleryPosition = (next: number, singleSetWidth: number) => {
-        let wrapped = next;
-        if (wrapped < 0) wrapped += singleSetWidth;
-        if (wrapped >= singleSetWidth) wrapped -= singleSetWidth;
-        galleryPositionRef.current = wrapped;
-        if (galleryTrackRef.current) {
-            galleryTrackRef.current.style.transform = `translateX(-${wrapped}px)`;
-        }
-    };
-
-    const stepGallery = (direction: 1 | -1) => {
-        const wrapper = galleryWrapperRef.current;
-        const track = galleryTrackRef.current;
-        if (!wrapper || !track) return;
-        const singleSetWidth = track.scrollWidth / 2;
-        const amount = wrapper.clientWidth * 0.9;
-        applyGalleryPosition(
-            galleryPositionRef.current + direction * amount,
-            singleSetWidth,
-        );
-    };
-
     useEffect(() => {
-        const track = galleryTrackRef.current;
-        if (!track) return;
-
-        const pixelsPerSecond = 40;
-        let rafId: number;
-        let lastTime: number | null = null;
-
-        const step = (time: number) => {
-            if (lastTime !== null && !isGalleryPaused) {
-                const deltaSeconds = (time - lastTime) / 1000;
-                const singleSetWidth = track.scrollWidth / 2;
-                applyGalleryPosition(
-                    galleryPositionRef.current + pixelsPerSecond * deltaSeconds,
-                    singleSetWidth,
-                );
+        if (!selectedOrg && !selectedFeature) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setSelectedOrg(null);
+                setSelectedFeature(null);
             }
-            lastTime = time;
-            rafId = requestAnimationFrame(step);
         };
-
-        rafId = requestAnimationFrame(step);
-        return () => cancelAnimationFrame(rafId);
-    }, [isGalleryPaused]);
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [selectedOrg, selectedFeature]);
 
     return (
         <>
@@ -265,9 +230,9 @@ export default function Welcome() {
                 }
             `}</style>
 
-            <div className="min-h-screen bg-[#F5F6F8] text-[#161F33]">
+            <div className="min-h-screen bg-[#F5F6F8] text-[#101B33]">
                 {/* Nav */}
-                <header className="sticky top-0 z-10 bg-[#101B33]/97 backdrop-blur">
+                <header className="sticky top-0 z-10 bg-[#0c351d]/97 backdrop-blur">
                     <div className="mx-auto flex max-w-5xl items-center justify-between px-7 py-4">
                         <div className="flex items-center gap-2.5 font-semibold text-white">
                             <img
@@ -277,7 +242,7 @@ export default function Welcome() {
                             />
                             CouncilForge
                         </div>
-                        <nav className="hidden gap-7 text-sm text-[#B9C2D6] sm:flex">
+                        <nav className="hidden gap-7 text-sm text-[#D8DED9] sm:flex">
                             <a
                                 href="#modules"
                                 className="transition-colors hover:text-white"
@@ -296,11 +261,18 @@ export default function Welcome() {
                             >
                                 For students &amp; officers
                             </a>
+                            <a
+                                href="#acc-osa"
+                                className="transition-colors hover:text-white"
+                            >
+                                ACC &amp; OSA
+                            </a>
                         </nav>
                         <div className="flex items-center gap-4">
+                            <AppearanceToggle />
                             <Link
                                 href={login()}
-                                className="text-sm font-medium text-[#B9C2D6] hover:text-white"
+                                className="text-sm font-medium text-[#D8DED9] hover:text-white"
                             >
                                 Log in
                             </Link>
@@ -322,7 +294,13 @@ export default function Welcome() {
                             backgroundImage: "url('/images/acc-campus-bg.png')",
                         }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#0B1226]/95 via-[#0B1226]/70 to-[#0B1226]/20" />
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(90deg, rgba(8, 42, 22, 0.84) 0%, rgba(8, 42, 22, 0.77) 42%, rgba(8, 42, 22, 0.45) 68%, rgba(8, 42, 22, 0) 100%)',
+                        }}
+                    />
 
                     <div className="relative ml-48 px-8 py-16 sm:ml-48 sm:px-12 sm:py-20">
                         <h1
@@ -331,7 +309,7 @@ export default function Welcome() {
                         >
                             <RevealWords text="Where the whole student council actually gets its work done." />
                         </h1>
-                        <p className="mt-6 max-w-[52ch] text-[#D3D9E8]">
+                        <p className="mt-6 max-w-[52ch] text-[#F0F1E8]">
                             Task boards, documents, events, voting, and concerns
                             for every campus organization — in one place,
                             instead of multiple chat groups and a shared drive
@@ -340,7 +318,7 @@ export default function Welcome() {
                         <div className="mt-8 flex flex-wrap gap-3.5">
                             <a
                                 href="#modules"
-                                className="rounded-lg border border-white/25 bg-[#101B33]/60 px-5.5 py-3 text-sm font-semibold text-white backdrop-blur"
+                                className="rounded-lg border border-white/25 bg-[#0c351d]/60 px-5.5 py-3 text-sm font-semibold text-white backdrop-blur"
                             >
                                 See what's inside
                             </a>
@@ -392,55 +370,86 @@ export default function Welcome() {
                     </div>
 
                     <FadeIn>
-                        <div
-                            ref={galleryWrapperRef}
-                            className="org-marquee-mask relative overflow-hidden"
-                        >
-                            <button
-                                type="button"
-                                onClick={() => stepGallery(-1)}
-                                aria-label="Previous photos"
-                                className="absolute top-1/2 left-0 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
-                            >
-                                ‹
-                            </button>
-
-                            <div
-                                ref={galleryTrackRef}
-                                onMouseEnter={() => setIsGalleryPaused(true)}
-                                onMouseLeave={() => setIsGalleryPaused(false)}
-                                onTouchStart={() => setIsGalleryPaused(true)}
-                                onTouchEnd={() => setIsGalleryPaused(false)}
-                                className="flex w-max gap-4"
-                            >
-                                {[...galleryImages, ...galleryImages].map(
-                                    (src, i) => (
-                                        <img
-                                            key={`${src}-${i}`}
-                                            src={src}
-                                            alt={`Council activity ${(i % galleryImages.length) + 1}`}
-                                            className="h-56 w-80 shrink-0 rounded-2xl object-cover sm:h-64 sm:w-96"
-                                        />
-                                    ),
-                                )}
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => stepGallery(1)}
-                                aria-label="Next photos"
-                                className="absolute top-1/2 right-0 z-10 flex h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-lg shadow-md hover:bg-[#F5F6F8]"
-                            >
-                                ›
-                            </button>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {orgs.map((org) => (
+                                <button
+                                    key={org.name}
+                                    type="button"
+                                    onClick={() => setSelectedOrg(org)}
+                                    className="group flex min-h-40 items-center gap-5 rounded-2xl border border-[#E1E4EA] bg-white p-5 text-left transition hover:-translate-y-1 hover:border-[#1E56C5]/40 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E56C5]"
+                                    aria-haspopup="dialog"
+                                >
+                                    <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F8] p-3">
+                                        <img src={org.logo} alt="" className="max-h-full max-w-full object-contain" />
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block text-lg font-semibold text-[#101B33]">{org.name}</span>
+                                        <span className="mt-1 block text-sm text-[#5B6478]">{org.tag}</span>
+                                        <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#1E56C5]">
+                                            View organization <span aria-hidden="true">→</span>
+                                        </span>
+                                    </span>
+                                </button>
+                            ))}
                         </div>
                     </FadeIn>
 
-                    <p className="mt-4 text-sm text-[#5B6478]">
-                        Council-wide events assign tasks down to each org; any
-                        org can also raise its own events and concerns.
+                    <p className="mt-5 text-sm text-[#5B6478]">
+                        Choose an organization to see how its own workspace fits into the shared council.
                     </p>
                 </section>
+
+                {selectedOrg && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c351d]/35 p-4 backdrop-blur-sm"
+                        onMouseDown={(event) => {
+                            if (event.target === event.currentTarget) setSelectedOrg(null);
+                        }}
+                    >
+                        <section
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="org-dialog-title"
+                            className="relative w-full max-w-lg rounded-2xl border border-[#72a77a]/40 bg-white p-7 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-9"
+                        >
+                            <button
+                                type="button"
+                                onClick={() => setSelectedOrg(null)}
+                                aria-label="Close organization details"
+                                className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full text-2xl text-[#5B6478] hover:bg-[#F5F6F8]"
+                            >
+                                ×
+                            </button>
+                            <div className="mb-6 flex items-center gap-4">
+                                <span className="flex h-20 w-20 items-center justify-center rounded-xl bg-[#F5F6F8] p-3">
+                                    <img src={selectedOrg.logo} alt="" className="max-h-full max-w-full object-contain" />
+                                </span>
+                                <div>
+                                    <h3 id="org-dialog-title" className="text-2xl font-semibold text-[#101B33]">{selectedOrg.name}</h3>
+                                    <p className="mt-1 text-[#5B6478]">{selectedOrg.tag}</p>
+                                </div>
+                            </div>
+                            <p className="leading-7 text-[#5B6478]">
+                                {selectedOrg.name} has its own space in CouncilForge, with a distinct identity and committee boards while staying connected to council-wide coordination.
+                            </p>
+                            <div className="mt-6 rounded-xl bg-[#F5F7FB] p-5">
+                                <h4 className="font-semibold text-[#101B33]">Inside this organization’s workspace</h4>
+                                <ul className="mt-3 space-y-2 text-sm text-[#5B6478]">
+                                    <li>Committee task boards and shared documents</li>
+                                    <li>Organization events, concerns, and updates</li>
+                                    <li>Coordination with council-wide activities</li>
+                                </ul>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedOrg(null)}
+                                className="mt-7 w-full rounded-lg bg-[#1E56C5] px-5 py-3 font-semibold text-white hover:bg-[#1747A5]"
+                            >
+                                Back to organizations
+                            </button>
+                        </section>
+                    </div>
+                )}
 
                 {/* Modules */}
                 <section
@@ -465,20 +474,63 @@ export default function Welcome() {
                                 <FadeIn
                                     key={f.title}
                                     delay={i * 0.08}
-                                    className="group cursor-pointer rounded-xl border border-[#E1E4EA] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#C1571F]/40 hover:shadow-lg"
+                                    className="h-full"
                                 >
-                                    <div className="mb-3.5 flex h-8.5 w-8.5 items-center justify-center rounded-lg bg-[#F4E3D6] font-semibold text-[#C1571F] transition-colors duration-300 group-hover:bg-[#C1571F] group-hover:text-white">
-                                        {f.glyph}
-                                    </div>
-                                    <h3 className="font-semibold">{f.title}</h3>
-                                    <p className="mt-2 text-sm text-[#5B6478]">
-                                        {f.body}
-                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedFeature(f)}
+                                        aria-haspopup="dialog"
+                                        className="group h-full w-full rounded-xl border border-[#E1E4EA] p-6 text-left transition-all duration-300 hover:-translate-y-1 hover:border-[#1E56C5]/40 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E56C5]"
+                                    >
+                                        <span className="mb-3.5 flex h-8.5 w-8.5 items-center justify-center rounded-lg bg-[#EAF1FA] font-semibold text-[#1E56C5] transition-colors duration-300 group-hover:bg-[#1E56C5] group-hover:text-white">
+                                            {f.glyph}
+                                        </span>
+                                        <span className="block font-semibold">{f.title}</span>
+                                        <span className="mt-2 block text-sm text-[#5B6478]">{f.body}</span>
+                                        <span className="mt-4 block text-sm font-semibold text-[#1E56C5]">Learn more →</span>
+                                    </button>
                                 </FadeIn>
                             ))}
                         </div>
                     </div>
                 </section>
+
+                {selectedFeature && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c351d]/35 p-4 backdrop-blur-sm"
+                        onMouseDown={(event) => {
+                            if (event.target === event.currentTarget) setSelectedFeature(null);
+                        }}
+                    >
+                        <section
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="feature-dialog-title"
+                            className="relative w-full max-w-lg rounded-2xl border border-[#72a77a]/40 bg-white p-7 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-9"
+                        >
+                            <button
+                                type="button"
+                                onClick={() => setSelectedFeature(null)}
+                                aria-label="Close feature details"
+                                className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full text-2xl text-[#5B6478] hover:bg-[#F5F6F8]"
+                            >×</button>
+                            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[#EAF1FA] text-xl font-semibold text-[#1E56C5]">
+                                {selectedFeature.glyph}
+                            </div>
+                            <h3 id="feature-dialog-title" className="text-2xl font-semibold text-[#101B33]">{selectedFeature.title}</h3>
+                            <p className="mt-4 leading-7 text-[#5B6478]">{selectedFeature.detail}</p>
+                            <div className="mt-6 rounded-xl bg-[#F5F7FB] p-5">
+                                <h4 className="font-semibold text-[#101B33]">What it helps with</h4>
+                                <p className="mt-2 text-sm leading-6 text-[#5B6478]">{selectedFeature.body}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedFeature(null)}
+                                className="mt-7 w-full rounded-lg bg-[#1E56C5] px-5 py-3 font-semibold text-white hover:bg-[#1747A5]"
+                            >Done</button>
+                        </section>
+                    </div>
+                )}
 
                 {/* Roles */}
                 <section
@@ -532,6 +584,65 @@ export default function Welcome() {
                                 </li>
                             </ul>
                         </FadeIn>
+                    </div>
+                </section>
+
+                {/* ACC & OSA information */}
+                <section
+                    id="acc-osa"
+                    className="scroll-mt-24 border-y border-[#E1E4EA] bg-[#F5F6F8] py-18"
+                >
+                    <div className="mx-auto max-w-5xl px-7">
+                        <div className="mb-10 max-w-[60ch]">
+                            <h2 className="text-3xl font-semibold text-[#101B33]">
+                                Built for the ACC student community.
+                            </h2>
+                            <p className="mt-3 leading-7 text-[#5B6478]">
+                                CouncilForge supports student organizations within Abuyog Community College and complements the work of the Office of Student Affairs (OSA).
+                            </p>
+                        </div>
+
+                        <div className="grid gap-5 lg:grid-cols-3">
+                            <FadeIn className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6">
+                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">THE SCHOOL</span>
+                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">Abuyog Community College</h3>
+                                <p className="mt-3 text-sm leading-6 text-[#5B6478]">
+                                    ACC’s mission is to develop capable, service-oriented graduates through inclusive and innovative programs. The college was founded in 1979 and is based in Abuyog, Leyte.
+                                </p>
+                                <a href="https://accabuyog.com/vision-mission-core-values.php" target="_blank" rel="noreferrer" className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline">
+                                    School vision &amp; mission <span aria-hidden="true" className="ml-1">↗</span>
+                                </a>
+                            </FadeIn>
+
+                            <FadeIn delay={0.08} className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6">
+                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">STUDENT SUPPORT</span>
+                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">Office of Student Affairs</h3>
+                                <p className="mt-3 text-sm leading-6 text-[#5B6478]">
+                                    OSA supports student welfare and development, guides student life and activities, and connects students with the college administration. Its work also includes student organizations and discipline.
+                                </p>
+                                <a href="https://accabuyog.com/home/about-osa/" target="_blank" rel="noreferrer" className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline">
+                                    About OSA <span aria-hidden="true" className="ml-1">↗</span>
+                                </a>
+                            </FadeIn>
+
+                            <FadeIn delay={0.16} className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6">
+                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">POLICIES &amp; GUIDANCE</span>
+                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">Know the official policies</h3>
+                                <p className="mt-3 text-sm leading-6 text-[#5B6478]">
+                                    Refer to ACC’s Student Manual for the current rules and guidance for students. CouncilForge helps organizations coordinate their work; it does not replace college policies or OSA guidance.
+                                </p>
+                                <a href="https://accabuyog.com/home/student-manual/" target="_blank" rel="noreferrer" className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline">
+                                    View the Student Manual <span aria-hidden="true" className="ml-1">↗</span>
+                                </a>
+                            </FadeIn>
+                        </div>
+
+                        <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#101B33] px-6 py-5 text-white">
+                            <p className="text-sm text-[#D8DED9]">For official announcements, services, and school information, visit ACC’s website.</p>
+                            <a href="https://accabuyog.com/home/" target="_blank" rel="noreferrer" className="rounded-lg border border-white/30 px-4 py-2 text-sm font-semibold hover:bg-white/10">
+                                Visit ACC website <span aria-hidden="true">↗</span>
+                            </a>
+                        </div>
                     </div>
                 </section>
 

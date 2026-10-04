@@ -28,7 +28,7 @@ function Stepper({ step }: { step: number }) {
                 return (
                     <div key={label} className="flex items-center gap-2">
                         <span
-                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${step > n ? 'bg-blue-600 text-white' : step === n ? 'bg-blue-600 text-white ring-4 ring-blue-100' : 'bg-slate-200 text-[#5B6478]'}`}
+                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${step > n ? 'bg-blue-600 text-white' : step === n ? 'bg-blue-600 text-white ring-4 ring-emerald-100' : 'bg-slate-200 text-[#5B6478]'}`}
                         >
                             {step > n ? <Check className="h-3.5 w-3.5" /> : n}
                         </span>
@@ -224,7 +224,7 @@ export default function CreateConcern({ organizations }: Props) {
                             </span>
                             <input
                                 type="checkbox"
-                                className="h-5 w-5 accent-blue-600"
+                                className="h-5 w-5 accent-emerald-700"
                                 checked={form.data.is_anonymous}
                                 onChange={(e) =>
                                     form.setData(

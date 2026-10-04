@@ -15,7 +15,7 @@ import {
 } from '@/components/council/ui';
 import { store as storeEvent } from '@/routes/officer/events';
 import { useForm } from '@inertiajs/react';
-import { MapPin, Plus, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
 
 type Ev = {
@@ -48,6 +48,12 @@ type Props = {
     plannable_organizations: { id: number; name: string }[];
     can_plan_school_wide: boolean;
 };
+type EventForm = {
+    organization_id: string; title: string; description: string; location: string;
+    starts_at: string; ends_at: string;
+    budget_items: { label: string; estimated_cost: string }[];
+    checklist_items: { label: string }[];
+};
 
 // Image slot in the Figma -> gradient banner in the org tag colour (no event images are stored yet).
 const GRADIENT: Record<Tone, string> = {
@@ -56,7 +62,7 @@ const GRADIENT: Record<Tone, string> = {
     red: 'from-red-400 to-red-600',
     gray: 'from-slate-400 to-slate-600',
     green: 'from-emerald-400 to-emerald-600',
-    blue: 'from-blue-400 to-blue-600',
+    blue: 'from-emerald-500 to-emerald-700',
     yellow: 'from-amber-400 to-amber-600',
 };
 
@@ -300,34 +306,37 @@ export default function Events({
 }
 
 function Calendar({ events }: { events: Ev[] }) {
-    const now = new Date();
-    const first = new Date(now.getFullYear(), now.getMonth(), 1);
-    const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const has = new Set(
-        events
-            .map((e) => new Date(e.starts_at))
-            .filter(
-                (d) =>
-                    d.getMonth() === now.getMonth() &&
-                    d.getFullYear() === now.getFullYear(),
-            )
-            .map((d) => d.getDate()),
-    );
-    const cells = [
-        ...Array(first.getDay()).fill(null),
-        ...Array.from({ length: days }, (_, i) => i + 1),
-    ];
+    const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    const [selectedDay, setSelectedDay] = useState(() => new Date().toDateString());
+    const today = new Date();
+    const first = new Date(month.getFullYear(), month.getMonth(), 1);
+    const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const eventsByDay = new Map<number, Ev[]>();
+    events.forEach((event) => {
+        const date = new Date(event.starts_at);
+        if (date.getFullYear() === month.getFullYear() && date.getMonth() === month.getMonth()) {
+            eventsByDay.set(date.getDate(), [...(eventsByDay.get(date.getDate()) ?? []), event]);
+        }
+    });
+    const cells = [...Array(first.getDay()).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
+    const selectedDate = new Date(selectedDay);
+    const selectedEvents = eventsByDay.get(selectedDate.getDate()) ?? [];
+    const changeMonth = (offset: number) => {
+        const nextMonth = new Date(month.getFullYear(), month.getMonth() + offset, 1);
+        setMonth(nextMonth);
+        setSelectedDay(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1).toDateString());
+    };
 
     return (
         <Card className="p-5">
-            <div className="mb-3 flex justify-between text-sm">
+            <div className="mb-3 flex items-center justify-between text-sm">
                 <b>Calendar View</b>
-                <span className="text-blue-600">
-                    {now.toLocaleString(undefined, {
+                <div className="flex items-center gap-2"><button type="button" aria-label="Previous month" onClick={() => changeMonth(-1)} className="rounded p-1 hover:bg-slate-100"><ChevronLeft className="h-4 w-4"/></button><span className="min-w-24 text-center text-blue-600">
+                    {month.toLocaleString(undefined, {
                         month: 'long',
                         year: 'numeric',
                     })}
-                </span>
+                </span><button type="button" aria-label="Next month" onClick={() => changeMonth(1)} className="rounded p-1 hover:bg-slate-100"><ChevronRight className="h-4 w-4"/></button></div>
             </div>
             <div className="grid grid-cols-7 gap-y-1 text-center text-xs">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
@@ -336,17 +345,10 @@ function Calendar({ events }: { events: Ev[] }) {
                     </span>
                 ))}
                 {cells.map((d, i) => (
-                    <span
-                        key={i}
-                        className={`relative mx-auto flex h-7 w-7 items-center justify-center rounded-full ${d === now.getDate() ? 'bg-blue-600 font-bold text-white' : ''}`}
-                    >
-                        {d}
-                        {d && has.has(d) && d !== now.getDate() && (
-                            <i className="absolute bottom-0 h-1 w-1 rounded-full bg-orange-500" />
-                        )}
-                    </span>
+                    d ? <button type="button" key={i} onClick={() => setSelectedDay(new Date(month.getFullYear(), month.getMonth(), d).toDateString())} aria-label={`${month.toLocaleString(undefined, { month: 'long' })} ${d}${eventsByDay.has(d) ? `, ${eventsByDay.get(d)?.length} events` : ''}`} className={`relative mx-auto flex h-7 w-7 items-center justify-center rounded-full hover:bg-emerald-100 ${selectedDate.getDate() === d && selectedDate.getMonth() === month.getMonth() && selectedDate.getFullYear() === month.getFullYear() ? 'bg-blue-600 font-bold text-white hover:bg-blue-700' : d === today.getDate() && month.getMonth() === today.getMonth() && month.getFullYear() === today.getFullYear() ? 'font-bold text-blue-700' : ''}`}>{d}{eventsByDay.has(d) && <i className={`absolute bottom-0 h-1 w-1 rounded-full ${selectedDate.getDate() === d && selectedDate.getMonth() === month.getMonth() ? 'bg-white' : 'bg-orange-500'}`} />}</button> : <span key={i} />
                 ))}
             </div>
+            <div className="mt-4 border-t border-[#E1E4EA] pt-3"><p className="mb-2 text-xs font-semibold text-[#5B6478]">{selectedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>{selectedEvents.length ? <ul className="space-y-2">{selectedEvents.map((event) => <li key={event.id} className="text-xs"><p className="font-medium">{event.title}</p><p className="text-[#5B6478]">{new Date(event.starts_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} · {event.organization}</p></li>)}</ul> : <p className="text-xs text-[#5B6478]">No events on this day.</p>}</div>
         </Card>
     );
 }
@@ -362,7 +364,7 @@ function CreateEvent({
     orgs: { id: number; name: string }[];
     schoolWide: boolean;
 }) {
-    const form = useForm({
+    const form = useForm<EventForm>({
         organization_id: String(orgs[0]?.id ?? ''),
         title: '',
         description: '',
@@ -372,10 +374,10 @@ function CreateEvent({
         budget_items: [] as { label: string; estimated_cost: string }[],
         checklist_items: [] as { label: string }[],
     });
-    const set = <K extends keyof typeof form.data>(
+    const set = <K extends keyof EventForm>(
         k: K,
         v: (typeof form.data)[K],
-    ) => form.setData(k, v);
+    ) => form.setData(k, v as never);
 
     return (
         <Modal open={open} onClose={onClose} title="Create Event">

@@ -25,11 +25,29 @@ class Officer extends Model
 
     public function visibleOrganizationIds(): Collection
     {
-        if ($this->organization?->is_council) {
+        if ($this->hasCouncilWideTaskAuthority()) {
             return Organization::query()->pluck('id');
         }
 
         return collect([$this->organization_id]);
+    }
+
+    public function isTaskManager(): bool
+    {
+        $position = strtolower(preg_replace('/[^a-z0-9]+/', ' ', (string) $this->position) ?? '');
+        $isPresident = str_contains($position, 'president')
+            && ! str_contains($position, 'vice')
+            && ! str_contains($position, 'assistant')
+            && ! str_contains($position, 'deputy');
+        $isVicePresident = (preg_match('/\b(vice president|vp)\b/', $position) === 1)
+            && (str_contains($position, 'internal') || str_contains($position, 'external'));
+
+        return $isPresident || $isVicePresident;
+    }
+
+    public function hasCouncilWideTaskAuthority(): bool
+    {
+        return $this->isTaskManager() && (bool) $this->organization?->is_council;
     }
 
     public function dashboardLabel(): string

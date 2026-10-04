@@ -42,6 +42,22 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $account = $user instanceof User ? $user : null;
+        $officerProfile = $account?->officerProfile;
+        $officerProfile?->loadMissing('organization');
+        $memberOrganizations = $account?->organizations()->orderBy('name')->get(['organizations.id', 'organizations.name']) ?? collect();
+        $roleAssignments = collect();
+        if ($officerProfile) {
+            $roleAssignments->push([
+                'label' => $officerProfile->position ?: 'Officer',
+                'organization' => $officerProfile->organization?->name,
+            ]);
+        }
+        foreach ($memberOrganizations as $organization) {
+            $roleAssignments->push(['label' => 'Member', 'organization' => $organization->name]);
+        }
+        if ($roleAssignments->isEmpty() && $account) {
+            $roleAssignments->push(['label' => 'Student', 'organization' => null]);
+        }
         $notifications = $account ? [
             'announcements' => Announcement::query()
                 ->visibleTo($account)
@@ -101,13 +117,14 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
-                'officer' => ($officer = $account?->officerProfile) ? [
-                    'label' => $officer->dashboardLabel(),
-                    'organization' => $officer->organization?->name,
-                    'position' => $officer->position,
-                    'is_president' => strcasecmp((string) $officer->position, 'President') === 0,
-                    'is_council' => (bool) $officer->organization?->is_council,
+                'officer' => $officerProfile ? [
+                    'label' => $officerProfile->dashboardLabel(),
+                    'organization' => $officerProfile->organization?->name,
+                    'position' => $officerProfile->position,
+                    'is_president' => strcasecmp((string) $officerProfile->position, 'President') === 0,
+                    'is_council' => (bool) $officerProfile->organization?->is_council,
                 ] : null,
+                'roles' => $roleAssignments->values(),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

@@ -1,4 +1,5 @@
 import CouncilLayout from '@/layouts/council-layout';
+import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
 import {
     Card,
     Pill,
@@ -31,6 +32,7 @@ type Props = {
         subject: string;
         status: string;
     }[];
+    deleted_uploads: DeletedUpload[];
 };
 const S: Record<string, { label: string; tone: Tone }> = {
     submitted: { label: 'Open', tone: 'gray' },
@@ -45,6 +47,7 @@ export default function StudentDashboard({
     stats,
     events,
     concerns,
+    deleted_uploads,
 }: Props) {
     return (
         <CouncilLayout title="Dashboard">
@@ -148,6 +151,9 @@ export default function StudentDashboard({
                         ))}
                     </ul>
                 </Card>
+            </div>
+            <div className="mt-5">
+                <DeletedUploads uploads={deleted_uploads} />
             </div>
         </CouncilLayout>
     );

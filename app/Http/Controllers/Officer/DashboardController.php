@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Officer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
+use App\Models\AuditLog;
 use App\Models\Concern;
+use App\Models\Document;
 use App\Models\Event;
 use App\Models\EventBudgetItem;
 use App\Models\FeedItem;
@@ -19,8 +21,7 @@ use Inertia\Response;
  * One controller, two dashboards (both from the Figma):
  *  - position = "President"  -> president/dashboard  (concerns, budget, officers, announcements)
  *  - anyone else             -> officer/dashboard    (tasks, concerns, events, members)
- * Scope is identical for both: Officer::visibleOrganizationIds() - the SSC president
- * therefore sees every organization's numbers, a "BYTE President" only BYTE's.
+ * SSC leadership sees every organization while other organization leaders see their own.
  */
 class DashboardController extends Controller
 {
@@ -39,6 +40,33 @@ class DashboardController extends Controller
             ->whereIn('status', ['planned', 'ongoing'])->orderBy('starts_at');
 
         $concerns = Concern::query()->whereIn('organization_id', $orgIds);
+        $tasks = Task::query()->whereHas('committee', fn ($query) => $query->whereIn('organization_id', $orgIds));
+        $taskCounts = (clone $tasks)->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
+        $concernCounts = (clone $concerns)->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
+        $monthExpression = match (DB::connection()->getDriverName()) {
+            'sqlite' => "strftime('%Y-%m', created_at)",
+            'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
+            'sqlsrv' => "FORMAT(created_at, 'yyyy-MM')",
+            default => "DATE_FORMAT(created_at, '%Y-%m')",
+        };
+        $chartStart = now()->startOfMonth()->subMonths(11);
+        $taskTrend = (clone $tasks)->where('created_at', '>=', $chartStart)
+            ->selectRaw("{$monthExpression} as month, COUNT(*) as aggregate")
+            ->groupByRaw($monthExpression)->pluck('aggregate', 'month');
+        $concernTrend = (clone $concerns)->where('created_at', '>=', $chartStart)
+            ->selectRaw("{$monthExpression} as month, COUNT(*) as aggregate")
+            ->groupByRaw($monthExpression)->pluck('aggregate', 'month');
+        $monthlyActivity = collect(range(0, 11))->map(function (int $offset) use ($chartStart, $taskTrend, $concernTrend): array {
+            $month = $chartStart->copy()->addMonths($offset);
+            $key = $month->format('Y-m');
+
+            return [
+                'month' => $month->format('M'),
+                'key' => $key,
+                'tasks' => (int) ($taskTrend[$key] ?? 0),
+                'concerns' => (int) ($concernTrend[$key] ?? 0),
+            ];
+        });
 
         $common = [
             'label' => $officer->dashboardLabel(),
@@ -50,6 +78,25 @@ class DashboardController extends Controller
                     'location' => $e->location, 'organization' => $e->organization?->name ?? 'School-wide',
                 ]),
             'upcoming_events_count' => (clone $upcoming)->count(),
+            'analytics' => [
+                'tasks_by_status' => collect(Task::STATUSES)->map(fn (string $status) => ['status' => $status, 'count' => (int) ($taskCounts[$status] ?? 0)]),
+                'concerns_by_status' => collect(Concern::STATUSES)->map(fn (string $status) => ['status' => $status, 'count' => (int) ($concernCounts[$status] ?? 0)]),
+                'monthly_activity' => $monthlyActivity,
+            ],
+            'deleted_uploads' => AuditLog::query()
+                ->where('action', 'document.deleted')
+                ->where('subject_type', Document::class)
+                ->whereIn('organization_id', $orgIds)
+                ->with(['actor', 'organization:id,name'])
+                ->recent()->limit(5)->get()
+                ->map(fn (AuditLog $log) => [
+                    'id' => $log->id,
+                    'name' => $log->metadata['name'] ?? 'Deleted document',
+                    'versions' => (int) ($log->metadata['versions'] ?? 1),
+                    'actor' => $log->actor?->name ?? 'Unknown user',
+                    'organization' => $log->organization?->name,
+                    'deleted_at' => $log->created_at,
+                ]),
         ];
 
         return strcasecmp((string) $officer->position, 'President') === 0

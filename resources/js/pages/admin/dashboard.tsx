@@ -1,14 +1,15 @@
 import AdminLayout from '@/layouts/admin-layout';
+import OfficerAnalytics from '@/components/council/officer-analytics';
+import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
 import {
     Card,
-    Pill,
     StatCard,
     timeAgo,
-    type Tone,
 } from '@/components/council/ui';
 import { Link } from '@inertiajs/react';
 import { CircleAlert, Eye, EyeOff, ListChecks } from 'lucide-react';
 
+type Analytics = { tasks_by_status: { status: string; count: number }[]; concerns_by_status: { status: string; count: number }[]; monthly_activity: { month: string; key: string; tasks: number; concerns: number }[] };
 type Props = {
     stats: {
         total_concerns: number;
@@ -18,8 +19,9 @@ type Props = {
         students: number;
         officers: number;
         organizations: number;
+        tasks: number; open_tasks: number; events: number; upcoming_events: number; documents: number;
     };
-    by_status: { status: string; count: number }[];
+    analytics: Analytics;
     recent_reveals: {
         id: number;
         admin: string | null;
@@ -27,22 +29,17 @@ type Props = {
         tracking_code: string | null;
         subject: string | null;
     }[];
-};
-
-const STATUS: Record<string, { label: string; tone: Tone }> = {
-    submitted: { label: 'Submitted', tone: 'orange' },
-    reviewed: { label: 'Reviewed', tone: 'purple' },
-    forwarded: { label: 'Forwarded', tone: 'blue' },
-    resolved: { label: 'Resolved', tone: 'green' },
+    recent_activity: { id: number; actor: string; action: string; organization: string | null; detail: string | null; created_at: string }[];
+    deleted_uploads: DeletedUpload[];
 };
 
 export default function AdminDashboard({
     stats,
-    by_status,
+    analytics,
     recent_reveals,
+    recent_activity,
+    deleted_uploads,
 }: Props) {
-    const total = Math.max(stats.total_concerns, 1);
-
     return (
         <AdminLayout title="Administrator dashboard">
             <h1 className="text-2xl font-bold">Administrator dashboard</h1>
@@ -58,6 +55,9 @@ export default function AdminDashboard({
                     icon={ListChecks}
                     tone="blue"
                 />
+                <StatCard label="Active Tasks" value={stats.open_tasks} icon={ListChecks} tone="purple" sub={`${stats.tasks} total tasks`} />
+                <StatCard label="Upcoming Events" value={stats.upcoming_events} icon={CircleAlert} tone="green" sub={`${stats.events} total events`} />
+                <StatCard label="Documents" value={stats.documents} icon={ListChecks} tone="blue" sub="Uploaded to the repository" />
                 <StatCard
                     label="Open Concerns"
                     value={stats.open_concerns}
@@ -80,34 +80,18 @@ export default function AdminDashboard({
                 />
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
-                <Card className="p-5">
-                    <h2 className="mb-4 font-semibold">Concerns by status</h2>
-                    <ul className="space-y-3">
-                        {by_status.map((s) => (
-                            <li key={s.status}>
-                                <div className="mb-1 flex justify-between text-sm">
-                                    <Pill
-                                        tone={STATUS[s.status]?.tone ?? 'gray'}
-                                    >
-                                        {STATUS[s.status]?.label ?? s.status}
-                                    </Pill>
-                                    <b>{s.count}</b>
-                                </div>
-                                <div className="h-1.5 rounded-full bg-slate-100">
-                                    <div
-                                        className="h-1.5 rounded-full bg-blue-600"
-                                        style={{
-                                            width: `${(s.count / total) * 100}%`,
-                                        }}
-                                    />
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </Card>
+            <OfficerAnalytics {...analytics} scope="platform" />
 
-                <Card className="p-5">
+            <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
+                <div className="lg:col-span-2">
+                    <DeletedUploads uploads={deleted_uploads} />
+                </div>
+                <Card className="p-5 lg:col-span-2">
+                    <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Platform overview</h2><Link href="/admin/users" className="text-xs font-semibold text-blue-600">View all users</Link></div>
+                    <p className="text-sm text-[#5B6478]">{stats.students} students · {stats.officers} officers · {stats.organizations} organizations · {stats.open_concerns} open concerns · {stats.open_tasks} active tasks</p>
+                </Card>
+                <Card className="p-5 lg:col-span-2"><div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Recent system activity</h2><Link href="/admin/audit" className="text-xs font-semibold text-blue-600">Full audit log</Link></div>{recent_activity.length === 0 ? <p className="py-4 text-sm text-[#5B6478]">No activity has been recorded yet.</p> : <ul className="divide-y divide-[#E1E4EA]">{recent_activity.map((entry) => <li key={entry.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"><span><b>{entry.actor}</b> {entry.action.replaceAll('.', ' ')}{entry.detail ? ` · ${entry.detail}` : ''}</span><span className="text-xs text-[#5B6478]">{entry.organization ?? 'Platform'} · {timeAgo(entry.created_at)}</span></li>)}</ul>}</Card>
+                <Card className="p-5 lg:col-span-2">
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="font-semibold">
                             Recent identity reveals

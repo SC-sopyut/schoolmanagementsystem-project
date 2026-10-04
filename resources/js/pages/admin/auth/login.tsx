@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import PasswordInput from '@/components/password-input';
 
 export default function AdminLogin() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -63,7 +64,7 @@ export default function AdminLogin() {
                                 onChange={(event) =>
                                     setData('email', event.target.value)
                                 }
-                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
                             {errors.email && (
                                 <p className="mt-1 text-xs text-red-600">
@@ -79,9 +80,8 @@ export default function AdminLogin() {
                             >
                                 Password
                             </label>
-                            <input
+                            <PasswordInput
                                 id="admin-password"
-                                type="password"
                                 name="password"
                                 value={data.password}
                                 required
@@ -90,7 +90,7 @@ export default function AdminLogin() {
                                 onChange={(event) =>
                                     setData('password', event.target.value)
                                 }
-                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                                className="h-10 rounded-lg border-slate-300 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
                             {errors.password && (
                                 <p className="mt-1 text-xs text-red-600">
@@ -102,7 +102,7 @@ export default function AdminLogin() {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="mb-4 w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+                            className="mb-4 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                         >
                             {processing
                                 ? 'Signing in...'
@@ -113,7 +113,7 @@ export default function AdminLogin() {
                             Not an administrator?{' '}
                             <Link
                                 href="/login"
-                                className="text-indigo-600 hover:underline"
+                                className="text-emerald-600 hover:underline"
                             >
                                 Return to regular sign in
                             </Link>

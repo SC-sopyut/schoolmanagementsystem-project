@@ -67,7 +67,7 @@ function PageLoadingOverlay() {
                     alt=""
                     className="mb-4 h-16 w-16 object-contain"
                 />
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/30 border-t-indigo-500" />
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/30 border-t-emerald-500" />
                 <p className="mt-4 text-sm font-medium text-white">
                     Loading...
                 </p>
@@ -88,6 +88,7 @@ void createInertiaApp({
             case name === 'admin/auth/login':
             case name === 'admin/auth/two-factor-challenge':
             case name === 'admin/dashboard':
+            case name.startsWith('admin/'):
                 return null;
 
             case name.startsWith('student/') ||

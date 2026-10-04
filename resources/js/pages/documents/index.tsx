@@ -1,4 +1,5 @@
 import CouncilLayout from '@/layouts/council-layout';
+import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
 import {
     Avatar,
     Card,
@@ -11,8 +12,8 @@ import {
     toneFor,
 } from '@/components/council/ui';
 import { download, index as documentsIndex, store } from '@/routes/documents';
-import { Link, useForm } from '@inertiajs/react';
-import { Download, FileText, Folder, Sheet, Upload } from 'lucide-react';
+import { Link, router, useForm } from '@inertiajs/react';
+import { Download, FileText, Folder, Presentation, Sheet, Upload, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 type Doc = {
@@ -24,6 +25,8 @@ type Doc = {
     updated_at: string;
     version: number;
     size: number | null;
+    preview_url: string;
+    can_manage: boolean;
 };
 type Props = {
     folders: {
@@ -41,6 +44,7 @@ type Props = {
         size: number;
         is_current: boolean;
     }[];
+    deleted_uploads: DeletedUpload[];
     can_upload: boolean;
 };
 
@@ -48,7 +52,8 @@ const TABS: [string, string, (t: string) => boolean][] = [
     ['All Files', 'all', () => true],
     ['PDFs', 'pdf', (t) => t === 'pdf'],
     ['Spreadsheets', 'sheet', (t) => ['xls', 'xlsx', 'csv'].includes(t)],
-    ['Documents', 'doc', (t) => ['doc', 'docx'].includes(t)],
+    ['Documents', 'doc', (t) => ['doc', 'docx', 'txt'].includes(t)],
+    ['Presentations', 'presentation', (t) => ['ppt', 'pptx'].includes(t)],
 ];
 const FOLDER_COLOR: Record<string, string> = {
     orange: 'text-orange-500',
@@ -56,7 +61,7 @@ const FOLDER_COLOR: Record<string, string> = {
     red: 'text-red-500',
     gray: 'text-slate-500',
     green: 'text-emerald-500',
-    blue: 'text-blue-500',
+    blue: 'text-emerald-500',
     yellow: 'text-amber-500',
 };
 const kb = (n: number | null) =>
@@ -72,6 +77,7 @@ export default function Documents({
     documents,
     selected_id,
     versions,
+    deleted_uploads,
     can_upload,
 }: Props) {
     const [tab, setTab] = useState('all');
@@ -92,7 +98,7 @@ export default function Documents({
 
     return (
         <CouncilLayout title="Document Repository">
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_1fr_260px]">
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_360px]">
                 <Card className="p-4">
                     <h3 className="mb-3 text-sm font-semibold">
                         File Directories
@@ -178,7 +184,9 @@ export default function Documents({
                                                 })}
                                                 className="flex items-center gap-2 font-medium"
                                             >
-                                                {[
+                                                {['ppt', 'pptx'].includes(d.file_type) ? (
+                                                    <Presentation className="h-4 w-4 text-orange-600" />
+                                                ) : [
                                                     'xls',
                                                     'xlsx',
                                                     'csv',
@@ -269,7 +277,13 @@ export default function Documents({
                             </li>
                         ))}
                     </ul>
+                    {selected && <div className="mt-6 border-t border-[#E1E4EA] pt-4"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-semibold">Preview</h3><a href={selected.preview_url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-600 hover:underline">Open full preview</a></div>{['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'txt'].includes(selected.file_type) ? <iframe title={`Preview of ${selected.name}`} src={selected.preview_url} className="h-[28rem] w-full rounded-lg border border-[#E1E4EA] bg-white" /> : <div className="flex h-36 flex-col items-center justify-center rounded-lg border border-dashed border-[#E1E4EA] text-center text-xs text-[#5B6478]"><FileText className="mb-2 h-6 w-6"/>Preview is not available for this file type.<a href={download(selected.id).url} className="mt-2 text-blue-600">Download to view</a></div>}
+                    {selected.can_manage && <div className="mt-3 space-y-2"><label className="block text-xs font-medium text-[#5B6478]">Access</label><select aria-label="Document access" className={inputCls} value={selected.access_level} onChange={(e) => router.patch(`/documents/${selected.id}/access`, { access_level: e.target.value }, { preserveScroll: true })}><option value="org_only">Members only</option><option value="public">Public access</option></select><button type="button" onClick={() => { if (window.confirm(`Delete ${selected.name} and all its versions?`)) router.delete(`/documents/${selected.id}`); }} className="flex items-center gap-2 text-xs font-medium text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4"/>Delete document</button></div>}</div>}
                 </Card>
+            </div>
+
+            <div className="mt-5">
+                <DeletedUploads uploads={deleted_uploads} />
             </div>
 
             {folder && (
@@ -312,13 +326,13 @@ function UploadModal({
                 className="space-y-3"
             >
                 <Field
-                    label="File (PDF, Word, Excel, CSV, PNG/JPG — max 10 MB)"
+                    label="File (PDF, Word, Excel, PowerPoint, CSV, TXT, PNG/JPG — max 25 MB)"
                     error={form.errors.file}
                 >
                     <input
                         type="file"
                         className={inputCls}
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.png,.jpg,.jpeg"
                         onChange={(e) =>
                             form.setData('file', e.target.files?.[0] ?? null)
                         }

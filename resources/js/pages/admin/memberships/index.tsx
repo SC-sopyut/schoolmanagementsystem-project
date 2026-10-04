@@ -39,7 +39,7 @@ export default function OrganizationMemberships({
                 {flash?.success && (
                     <p
                         role="status"
-                        className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                        className="mt-3 rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-600"
                     >
                         {flash.success}
                     </p>
@@ -110,7 +110,7 @@ export default function OrganizationMemberships({
                         <button
                             type="submit"
                             disabled={form.processing}
-                            className="h-10 rounded-md bg-[#1E56C5] px-4 text-sm font-semibold text-white hover:bg-[#1949A7] disabled:opacity-60"
+                            className="h-10 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                         >
                             {form.processing ? 'Adding…' : 'Add member'}
                         </button>
