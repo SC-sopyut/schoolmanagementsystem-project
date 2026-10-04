@@ -141,7 +141,7 @@ export default function Register({ passwordRules }: Props) {
                                 <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="mt-2 mb-1 w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+                                    className="mt-2 mb-1 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
                                     data-test="register-user-button"
                                 >
                                     {processing && <Spinner />}
@@ -152,7 +152,7 @@ export default function Register({ passwordRules }: Props) {
                                     Already have an account?{' '}
                                     <TextLink
                                         href={login()}
-                                        className="text-indigo-600 hover:underline"
+                                        className="text-emerald-600 hover:underline"
                                     >
                                         Log in
                                     </TextLink>

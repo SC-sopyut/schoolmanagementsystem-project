@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Concern;
+use App\Models\Document;
 use App\Models\Event;
 use App\Models\EventAttendee;
 use Illuminate\Http\Request;
@@ -34,6 +36,20 @@ class DashboardController extends Controller
             'events' => (clone $events)->limit(3)->get(['id', 'title', 'starts_at', 'location']),
             'concerns' => Concern::where('student_id', $user->id)->latest()->limit(3)
                 ->get(['id', 'tracking_code', 'subject', 'status']),
+            'deleted_uploads' => AuditLog::query()
+                ->where('action', 'document.deleted')
+                ->where('subject_type', Document::class)
+                ->whereIn('organization_id', $orgIds)
+                ->with(['actor', 'organization:id,name'])
+                ->recent()->limit(5)->get()
+                ->map(fn (AuditLog $log) => [
+                    'id' => $log->id,
+                    'name' => $log->metadata['name'] ?? 'Deleted document',
+                    'versions' => (int) ($log->metadata['versions'] ?? 1),
+                    'actor' => $log->actor?->name ?? 'Unknown user',
+                    'organization' => $log->organization?->name,
+                    'deleted_at' => $log->created_at,
+                ]),
         ]);
     }
 }

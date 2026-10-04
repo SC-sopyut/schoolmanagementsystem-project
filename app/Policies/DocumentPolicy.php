@@ -14,4 +14,10 @@ class DocumentPolicy
         return $document->access_level === 'public'
             || OrgScope::idsFor($user)->contains($document->folder->organization_id);
     }
+
+    public function manage(User $user, Document $document): bool
+    {
+        return $user->officerProfile !== null
+            && $user->officerProfile->visibleOrganizationIds()->contains($document->folder->organization_id);
+    }
 }

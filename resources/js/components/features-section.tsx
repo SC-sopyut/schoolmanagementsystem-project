@@ -105,9 +105,9 @@ function FeatureCardGrid({ features }: { features: FeatureCard[] }) {
                 <FadeIn key={feature.title}>
                     <Link
                         href={feature.href}
-                        className="group block h-full rounded-2xl border border-[#E1E4EA] bg-white p-6 transition hover:border-[#C1571F]/40 hover:shadow-sm"
+                        className="group block h-full rounded-2xl border border-[#E1E4EA] bg-white p-6 transition hover:border-[#1E56C5]/40 hover:shadow-sm"
                     >
-                        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#C1571F]/10 text-[#C1571F]">
+                        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#1E56C5]/10 text-[#1E56C5]">
                             <feature.icon className="h-5 w-5" />
                         </div>
                         <h3 className="mb-2 text-base font-semibold text-[#101B33]">
@@ -134,7 +134,7 @@ export function FeaturesSection() {
         <section id="features" className="scroll-mt-24 bg-[#F5F6F8] py-24">
             <div className="mx-auto max-w-5xl px-7">
                 <FadeIn>
-                    <p className="mb-3 text-sm font-medium tracking-wide text-[#C1571F] uppercase">
+                    <p className="mb-3 text-sm font-medium tracking-wide text-[#1E56C5] uppercase">
                         What you can do
                     </p>
                 </FadeIn>

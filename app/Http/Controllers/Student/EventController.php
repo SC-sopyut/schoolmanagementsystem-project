@@ -19,6 +19,7 @@ class EventController extends Controller
 
         $events = Event::query()
             ->where(fn ($q) => $q->whereNull('organization_id')->orWhereIn('organization_id', $orgIds))
+            ->where('starts_at', '>=', now())
             ->whereIn('status', ['planned', 'ongoing'])
             ->withCount('attendees')
             ->withExists(['attendees as is_joined' => fn ($q) => $q->where('user_id', $user->id)])

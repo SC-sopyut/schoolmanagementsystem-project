@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\ConcernController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrganizationMembershipController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest:admin')->group(function () {
@@ -39,6 +40,7 @@ Route::middleware(['auth:admin', 'is_admin'])->group(function () {
 
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('memberships', [OrganizationMembershipController::class, 'index'])->name('memberships.index');
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
     Route::post('memberships', [OrganizationMembershipController::class, 'store'])->name('memberships.store');
     Route::get('audit', [AuditController::class, 'index'])->name('audit.index');
 

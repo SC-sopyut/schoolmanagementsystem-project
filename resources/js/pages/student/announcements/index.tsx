@@ -98,7 +98,7 @@ export default function Announcements({
                                             { preserveScroll: true },
                                         )
                                     }
-                                    className="text-xs font-semibold text-blue-700 hover:text-blue-900"
+                                    className="text-xs font-semibold text-blue-700 hover:text-emerald-950"
                                 >
                                     Mark as read
                                 </button>

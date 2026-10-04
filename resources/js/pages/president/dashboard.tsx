@@ -1,10 +1,12 @@
 import CouncilLayout from '@/layouts/council-layout';
+import OfficerAnalytics from '@/components/council/officer-analytics';
+import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
 import {
     Card,
     Pill,
     StatCard,
     money,
-    shortDate,
+    // shortDate,
     type Tone,
 } from '@/components/council/ui';
 import { index as officerConcerns } from '@/routes/officer/concerns';
@@ -27,6 +29,7 @@ type Concern = {
 };
 type Props = {
     label: string;
+    analytics: { tasks_by_status: { status: string; count: number }[]; concerns_by_status: { status: string; count: number }[]; monthly_activity: { month: string; key: string; tasks: number; concerns: number }[] };
     first_name: string;
     stats: {
         open_concerns: number;
@@ -45,6 +48,7 @@ type Props = {
     }[];
     upcoming_events_count: number;
     announcements: { id: number; title: string; body: string }[];
+    deleted_uploads: DeletedUpload[];
 };
 
 // Figma badge wording: New / In Progress / Resolved.
@@ -57,22 +61,24 @@ const badge = (s: string): { label: string; tone: Tone } =>
 
 export default function PresidentDashboard({
     first_name,
+    analytics,
     stats,
     recent_concerns,
     upcoming_events,
     upcoming_events_count,
     announcements,
+    deleted_uploads,
 }: Props) {
     const next = upcoming_events[0];
     const remainingPct = 100 - stats.budget_used_pct;
 
     return (
         <CouncilLayout title="Dashboard">
-            <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+            <div className="rounded-2xl bg-gradient-to-r from-emerald-700 to-emerald-600 p-6 text-white">
                 <h2 className="text-2xl font-bold">
                     Welcome back, {first_name}! 👋
                 </h2>
-                <p className="mt-1 text-sm text-blue-100">
+                <p className="mt-1 text-sm text-emerald-100">
                     "Leadership is not about being in charge. It is about taking
                     care of those in your charge." Let's build a historic term
                     together.
@@ -109,6 +115,7 @@ export default function PresidentDashboard({
                     sub="Officers in your scope"
                 />
             </div>
+            <OfficerAnalytics {...analytics} />
 
             <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
                 <Card className="p-5 lg:col-span-2">
@@ -225,6 +232,10 @@ export default function PresidentDashboard({
                         </ul>
                     </Card>
                 </div>
+            </div>
+
+            <div className="mt-5">
+                <DeletedUploads uploads={deleted_uploads} />
             </div>
 
             <div className="mt-6 flex justify-end gap-3">

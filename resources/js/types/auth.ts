@@ -11,4 +11,5 @@ export type User = {
 
 export type Auth = {
     user: User;
+    roles?: { label: string; organization: string | null }[];
 };

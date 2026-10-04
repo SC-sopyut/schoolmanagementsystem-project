@@ -1,4 +1,5 @@
 import CouncilLayout from '@/layouts/council-layout';
+import EventCalendar from '@/components/council/event-calendar';
 import {
     Card,
     Pill,
@@ -33,7 +34,8 @@ export default function StudentEvents({ events }: { events: Ev[] }) {
                     No upcoming events.
                 </Card>
             )}
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 {events.map((e) => {
                     const org = e.organization?.name ?? 'School-wide';
                     return (
@@ -90,6 +92,8 @@ export default function StudentEvents({ events }: { events: Ev[] }) {
                         </Card>
                     );
                 })}
+            </div>
+            <div><EventCalendar events={events.map((event) => ({ id: event.id, title: event.title, starts_at: event.starts_at, organization: event.organization?.name ?? 'School-wide' }))}/></div>
             </div>
         </CouncilLayout>
     );

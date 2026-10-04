@@ -58,8 +58,8 @@ export const presidentNav = (): NavItem[] => [
     { label: 'Announcements', href: '/officer/announcements', icon: Megaphone },
     { label: 'Concerns', href: officerConcerns().url, icon: CircleAlert },
     { label: 'Events', href: officerEvents().url, icon: CalendarDays },
-    { label: 'Budget', href: null, icon: Wallet },
-    { label: 'Members', href: null, icon: Users },
+    { label: 'Budget', href: '/officer/budget', icon: Wallet },
+    { label: 'Members', href: '/officer/members', icon: Users },
     { label: 'Documents', href: documents().url, icon: FolderOpen },
     settings,
 ];

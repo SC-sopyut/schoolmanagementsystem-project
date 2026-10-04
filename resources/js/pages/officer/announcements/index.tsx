@@ -1,5 +1,5 @@
 import CouncilLayout from '@/layouts/council-layout';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
 type Organization = { id: number; name: string };

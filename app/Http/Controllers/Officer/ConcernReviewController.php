@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Officer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Officer\ForwardConcernRequest;
+use App\Models\AuditLog;
 use App\Models\Concern;
 use App\Models\FeedItem;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +35,7 @@ class ConcernReviewController extends Controller
 
         $concern->update(['status' => 'reviewed', 'reviewed_by' => $officer->id]);
         $concern->updatesTimeline()->create(['officer_id' => $officer->id, 'stage_label' => 'Officer Assigned']);
+        $this->recordChange($concern, 'concern.reviewed', ['from' => 'submitted', 'to' => 'reviewed']);
 
         return back();
     }
@@ -53,6 +55,7 @@ class ConcernReviewController extends Controller
             'stage_label' => 'Forwarded to the Board',
             'message' => $request->string('officer_notes'),
         ]);
+        $this->recordChange($concern, 'concern.forwarded', ['from' => 'reviewed', 'to' => 'forwarded']);
 
         return back()->with('success', 'Concern forwarded to the board.');
     }
@@ -81,8 +84,15 @@ class ConcernReviewController extends Controller
             'officer_id' => request()->user()->officerProfile->id,
             'stage_label' => 'Resolved',
         ]);
+        $this->recordChange($concern, 'concern.resolved', ['from' => 'forwarded', 'to' => 'resolved']);
         FeedItem::record(request()->user(), $concern->organization_id, "resolved concern {$concern->tracking_code}");
 
         return back();
+    }
+
+    private function recordChange(Concern $concern, string $action, array $metadata): void
+    {
+        $user = request()->user();
+        AuditLog::create(['actor_type' => $user->getMorphClass(), 'actor_id' => $user->id, 'action' => $action, 'subject_type' => Concern::class, 'subject_id' => $concern->id, 'organization_id' => $concern->organization_id, 'metadata' => ['tracking_code' => $concern->tracking_code, ...$metadata], 'ip_address' => request()->ip()]);
     }
 }

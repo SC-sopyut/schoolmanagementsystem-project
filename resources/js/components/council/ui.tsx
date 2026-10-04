@@ -16,7 +16,7 @@ const PILL: Record<Tone, string> = {
     purple: 'bg-purple-50 text-purple-600 border-purple-200',
     red: 'bg-red-50 text-red-600 border-red-200',
     gray: 'bg-slate-100 text-slate-600 border-slate-200',
-    green: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+    green: 'bg-blue-50 text-emerald-600 border-blue-200',
     blue: 'bg-blue-50 text-blue-600 border-blue-200',
     yellow: 'bg-amber-50 text-amber-600 border-amber-200',
 };
@@ -26,8 +26,8 @@ const ICON_BOX: Record<Tone, string> = {
     purple: 'bg-purple-50 text-purple-500',
     red: 'bg-red-50 text-red-500',
     gray: 'bg-slate-100 text-slate-500',
-    green: 'bg-emerald-50 text-emerald-500',
-    blue: 'bg-blue-50 text-blue-500',
+    green: 'bg-blue-50 text-emerald-500',
+    blue: 'bg-blue-50 text-emerald-500',
     yellow: 'bg-amber-50 text-amber-500',
 };
 
@@ -150,7 +150,7 @@ export function ProgressBar({
 }) {
     const color =
         tone === 'green'
-            ? 'bg-emerald-500'
+            ? 'bg-blue-500'
             : tone === 'orange'
               ? 'bg-orange-500'
               : 'bg-blue-600';
@@ -164,7 +164,7 @@ export function ProgressBar({
     );
 }
 
-export const money = (n: number) => '$' + Math.round(n).toLocaleString();
+export const money = (n: number) => '₱' + Math.round(n).toLocaleString();
 
 export const shortDate = (d?: string | null) =>
     d

@@ -9,17 +9,16 @@ use App\Models\User;
 class TaskPolicy
 {
     /**
-     * Officers may manage a committee's board only if they hold an officer position
-     * in that committee's organization. The Student Council itself is treated as the
-     * organization that owns council-wide committees, so council officers can also
-     * assign cross-org tasks (per the "council can assign tasks to every organization"
-     * requirement) via a dedicated council-scoped committee rather than bypassing this check.
+     * Presidents and the internal/external vice presidents manage task assignments.
+     * SSC leadership has authority across all organizations; other leaders stay in their own.
      */
     public function manageBoard(User $user, Committee $committee): bool
     {
         $officer = $user->officerProfile;
 
-        return $officer !== null && $officer->organization_id === $committee->organization_id;
+        return $officer !== null
+            && $officer->isTaskManager()
+            && ($officer->hasCouncilWideTaskAuthority() || $officer->organization_id === $committee->organization_id);
     }
 
     /** Only the assignee or a manager of the task's committee may move it across the board. */

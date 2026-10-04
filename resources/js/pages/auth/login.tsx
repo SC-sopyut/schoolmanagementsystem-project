@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import PasswordInput from '@/components/password-input';
 import { login, register } from '@/routes';
 
 type LoginForm = {
@@ -79,7 +80,7 @@ export default function Login({ status }: { status?: string }) {
                                 onChange={(e) =>
                                     setData('email', e.target.value)
                                 }
-                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
                             {errors.email && (
                                 <p className="mt-1 text-xs text-red-600">
@@ -95,17 +96,17 @@ export default function Login({ status }: { status?: string }) {
                             >
                                 Password
                             </label>
-                            <input
+                            <PasswordInput
                                 id="password"
-                                type="password"
                                 name="password"
+                                required
                                 value={data.password}
                                 autoComplete="current-password"
                                 placeholder="Enter password"
                                 onChange={(e) =>
                                     setData('password', e.target.value)
                                 }
-                                className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                                className="h-10 rounded-lg border-slate-300 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />
                             {errors.password && (
                                 <p className="mt-1 text-xs text-red-600">
@@ -123,14 +124,14 @@ export default function Login({ status }: { status?: string }) {
                                     onChange={(e) =>
                                         setData('remember', e.target.checked)
                                     }
-                                    className="rounded border-slate-300 text-indigo-600 shadow-sm"
+                                    className="rounded border-slate-300 text-emerald-600 shadow-sm"
                                 />
                                 Remember this device
                             </label>
 
                             <Link
                                 href="/forgot-password"
-                                className="text-indigo-600 hover:underline"
+                                className="text-emerald-600 hover:underline"
                             >
                                 Forgot password?
                             </Link>
@@ -139,7 +140,7 @@ export default function Login({ status }: { status?: string }) {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="mb-4 w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+                            className="mb-4 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                         >
                             Sign in to Council
                         </button>
@@ -148,7 +149,7 @@ export default function Login({ status }: { status?: string }) {
                             Need to register your team?{' '}
                             <Link
                                 href={register.url()}
-                                className="text-indigo-600 hover:underline"
+                                className="text-emerald-600 hover:underline"
                             >
                                 Create account
                             </Link>

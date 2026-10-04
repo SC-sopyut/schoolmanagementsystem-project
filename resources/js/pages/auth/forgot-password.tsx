@@ -74,7 +74,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     type="submit"
                                     disabled={processing}
                                     data-test="email-password-reset-link-button"
-                                    className="mt-2 w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+                                    className="mt-2 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
                                 >
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -86,7 +86,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     Remember your password?{' '}
                                     <TextLink
                                         href={login()}
-                                        className="text-indigo-600 hover:underline"
+                                        className="text-emerald-600 hover:underline"
                                     >
                                         Log in
                                     </TextLink>

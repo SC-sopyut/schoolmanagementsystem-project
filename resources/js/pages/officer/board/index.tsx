@@ -26,12 +26,15 @@ type Task = {
     priority: string;
     due_date: string | null;
     committee: string | null;
+    organization: string | null;
     assignee: { id: number; name: string } | null;
 };
 type Props = {
     columns: Record<string, Task[]>;
-    committees: { id: number; name: string; organization_id: number }[];
+    committees: { id: number; name: string; organization_id: number; organization: string | null }[];
     assignees: { id: number; name: string; organization_id: number }[];
+    can_manage_tasks: boolean;
+    task_authority_scope: string;
 };
 
 const COLS: [string, string][] = [
@@ -42,7 +45,7 @@ const COLS: [string, string][] = [
     ['done', 'Done'],
 ];
 
-export default function Board({ columns, committees, assignees }: Props) {
+export default function Board({ columns, committees, assignees, can_manage_tasks, task_authority_scope }: Props) {
     const [cols, setCols] = useState(columns);
     const [priority, setPriority] = useState('all');
     const [assignee, setAssignee] = useState('all');
@@ -85,6 +88,10 @@ export default function Board({ columns, committees, assignees }: Props) {
 
     return (
         <CouncilLayout title="Kanban Board">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E1E4EA] bg-white p-4">
+                <div><h2 className="font-semibold">Officer tasking</h2><p className="mt-1 text-xs text-[#5B6478]">{can_manage_tasks ? `Assign work to organization members and officers within ${task_authority_scope}.` : 'You can update tasks assigned to you. Presidents and VPs Internal/External manage assignments.'}</p></div>
+                {can_manage_tasks && <button type="button" onClick={() => setOpen(true)} disabled={committees.length === 0} className={btnPrimary + ' disabled:opacity-50'}><Plus className="h-4 w-4"/>Assign task</button>}
+            </div>
             <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="rounded-lg border border-[#E1E4EA] bg-white px-3 py-1.5 text-xs">
                     Group by: Status
@@ -144,7 +151,7 @@ export default function Board({ columns, committees, assignees }: Props) {
                                                     tone={toneFor(t.committee)}
                                                     dot
                                                 >
-                                                    {t.committee}
+                                                    {t.organization ? `${t.organization} · ${t.committee}` : t.committee}
                                                 </Pill>
                                             ) : (
                                                 <span />
@@ -191,19 +198,12 @@ export default function Board({ columns, committees, assignees }: Props) {
                 })}
             </div>
 
-            <button
-                onClick={() => setOpen(true)}
-                disabled={committees.length === 0}
-                className="fixed right-6 bottom-6 inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-                <Plus className="h-4 w-4" /> New Task
-            </button>
-            <NewTask
+            {can_manage_tasks && <NewTask
                 open={open}
                 onClose={() => setOpen(false)}
                 committees={committees}
                 assignees={assignees}
-            />
+            />}
         </CouncilLayout>
     );
 }
@@ -235,9 +235,9 @@ function NewTask({
     function submit(e: React.FormEvent) {
         e.preventDefault();
         // committee_id lives in the URL (route-model bound + policy-checked), not the body.
-        form.transform(({ committee_id, ...rest }) => rest).post(
-            storeTask(Number(form.data.committee_id)).url,
-            {
+        // eslint-disable-next-line no-unused-vars
+        form.transform(({ committee_id: _committee_id, ...rest }) => rest);
+        form.post(storeTask(Number(form.data.committee_id)).url, {
                 preserveScroll: true,
                 onSuccess: () => {
                     form.reset(
@@ -248,12 +248,11 @@ function NewTask({
                     );
                     onClose();
                 },
-            },
-        );
+            });
     }
 
     return (
-        <Modal open={open} onClose={onClose} title="New Task">
+        <Modal open={open} onClose={onClose} title="Assign Task to Officer or Member">
             <form onSubmit={submit} className="space-y-3">
                 <Field label="Committee" error={form.errors.committee_id}>
                     <select
@@ -266,7 +265,7 @@ function NewTask({
                     >
                         {committees.map((c) => (
                             <option key={c.id} value={c.id}>
-                                {c.name}
+                                {c.organization ? `${c.organization} · ${c.name}` : c.name}
                             </option>
                         ))}
                     </select>
@@ -339,7 +338,7 @@ function NewTask({
                         Cancel
                     </button>
                     <button disabled={form.processing} className={btnPrimary}>
-                        Add task
+                        Assign task
                     </button>
                 </div>
             </form>
