@@ -7,7 +7,6 @@ use App\Models\Concern;
 use App\Models\Document;
 use App\Models\Event;
 use App\Models\Task;
-use App\Models\User;
 use App\Support\OrgScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

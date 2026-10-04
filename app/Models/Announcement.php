@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,8 +13,11 @@ class Announcement extends Model
     use HasFactory;
 
     public const AUDIENCE_ORGANIZATION = 'organization';
+
     public const AUDIENCE_ALL_STUDENTS = 'all_students';
+
     public const AUDIENCE_ALL_OFFICERS = 'all_officers';
+
     public const AUDIENCE_EVERYONE = 'everyone';
 
     protected $fillable = ['organization_id', 'officer_id', 'title', 'body', 'audience', 'published_at'];

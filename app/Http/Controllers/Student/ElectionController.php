@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreVoteRequest;
 use App\Models\Election;
 use App\Models\Vote;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -88,7 +89,7 @@ class ElectionController extends Controller
                     'voted_at' => now(),
                 ]);
             });
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return back()->withErrors(['candidate_id' => 'You have already voted for this position.']);
         }
 

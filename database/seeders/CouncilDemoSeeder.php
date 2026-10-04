@@ -91,8 +91,12 @@ class CouncilDemoSeeder extends Seeder
                 'created_by' => ($org === 'SSC' ? $sscOfficer : $committeeOfficer)->id,
             ]);
             if ($e->wasRecentlyCreated) {
-                foreach ($budget as [$l, $est, $act]) { $e->budgetItems()->create(['label' => $l, 'estimated_cost' => $est, 'actual_cost' => $act]); }
-                foreach ($checks as $n => $done) { $e->checklistItems()->create(['label' => 'Prep item ' . ($n + 1), 'is_done' => $done]); }
+                foreach ($budget as [$l, $est, $act]) {
+                    $e->budgetItems()->create(['label' => $l, 'estimated_cost' => $est, 'actual_cost' => $act]);
+                }
+                foreach ($checks as $n => $done) {
+                    $e->checklistItems()->create(['label' => 'Prep item '.($n + 1), 'is_done' => $done]);
+                }
             }
         }
 

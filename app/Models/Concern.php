@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Concern extends Model
 {
@@ -24,12 +23,13 @@ class Concern extends Model
     ];
 
     public const STATUSES = ['submitted', 'reviewed', 'forwarded', 'resolved'];
+
     public const PRIORITIES = ['low', 'medium', 'high'];
 
     protected static function booted(): void
     {
         static::creating(function (Concern $concern) {
-            $concern->tracking_code ??= 'CON-' . now()->format('Y') . '-' . str_pad(
+            $concern->tracking_code ??= 'CON-'.now()->format('Y').'-'.str_pad(
                 (string) (static::whereYear('created_at', now()->year)->count() + 1),
                 4,
                 '0',
