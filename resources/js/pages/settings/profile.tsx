@@ -50,21 +50,23 @@ export default function Profile() {
 
                 <Card>
                     <CardContent className="space-y-4 border-t pt-4">
-                            <form
-                                className="flex flex-wrap items-center gap-4"
-                                onSubmit={(event) => {
-                                    event.preventDefault();
-                                    photoForm.post('/settings/profile/avatar', {
-                                        forceFormData: true,
-                                        preserveScroll: true,
-                                    });
-                                }}
-                            >
+                        <form
+                            className="flex flex-wrap items-center gap-4"
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                photoForm.post('/settings/profile/avatar', {
+                                    forceFormData: true,
+                                    preserveScroll: true,
+                                });
+                            }}
+                        >
                             <div className="flex items-center gap-4">
                                 <div className="relative shrink-0">
-                                    <Avatar className="h-24 w-24 border-2 border-background shadow-sm">
+                                    <Avatar className="border-background h-24 w-24 border-2 shadow-sm">
                                         <AvatarImage
-                                            src={photoPreview ?? auth.user.avatar}
+                                            src={
+                                                photoPreview ?? auth.user.avatar
+                                            }
                                             alt={`${auth.user.name} profile photo`}
                                             className="object-cover"
                                         />
@@ -74,19 +76,22 @@ export default function Profile() {
                                     </Avatar>
                                     <Label
                                         htmlFor="avatar"
-                                        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring absolute -right-1 -bottom-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-background shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                                        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring border-background absolute -right-1 -bottom-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         <Camera className="h-4 w-4" />
-                                        <span className="sr-only">Choose a profile photo</span>
+                                        <span className="sr-only">
+                                            Choose a profile photo
+                                        </span>
                                     </Label>
                                 </div>
                                 <div className="min-w-0 flex-1">
-                            <CardTitle>{auth.user.name}</CardTitle>
+                                    <CardTitle>{auth.user.name}</CardTitle>
                                     <p className="text-muted-foreground mt-1 truncate text-sm">
                                         {auth.user.email}
                                     </p>
                                 </div>
-                                <Badge className=""
+                                <Badge
+                                    className=""
                                     variant={
                                         auth.user.email_verified_at
                                             ? 'default'
@@ -103,25 +108,41 @@ export default function Profile() {
                                     accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                                     className="sr-only"
                                     onChange={(event) => {
-                                        const file = event.target.files?.[0] ?? null;
+                                        const file =
+                                            event.target.files?.[0] ?? null;
                                         photoForm.setData('avatar', file);
                                         setPhotoPreview(
-                                            file ? URL.createObjectURL(file) : null,
+                                            file
+                                                ? URL.createObjectURL(file)
+                                                : null,
                                         );
                                     }}
                                 />
                                 <InputError message={photoForm.errors.avatar} />
                             </div>
                             <div className="flex flex-wrap items-center gap-3">
-                                <Button type="submit" disabled={!photoForm.data.avatar || photoForm.processing}>
-                                    {photoForm.processing ? 'Uploading…' : 'Save photo'}
+                                <Button
+                                    type="submit"
+                                    disabled={
+                                        !photoForm.data.avatar ||
+                                        photoForm.processing
+                                    }
+                                >
+                                    {photoForm.processing
+                                        ? 'Uploading…'
+                                        : 'Save photo'}
                                 </Button>
                                 {auth.user.avatar && (
                                     <Button
                                         type="button"
                                         variant="outline"
                                         disabled={photoForm.processing}
-                                        onClick={() => photoForm.delete('/settings/profile/avatar', { preserveScroll: true })}
+                                        onClick={() =>
+                                            photoForm.delete(
+                                                '/settings/profile/avatar',
+                                                { preserveScroll: true },
+                                            )
+                                        }
                                     >
                                         Remove photo
                                     </Button>
@@ -129,22 +150,24 @@ export default function Profile() {
                             </div>
                         </form>
                         <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="flex items-center gap-3 text-sm">
-                            <CalendarDays className="text-muted-foreground h-4 w-4" />
-                            <span className="text-muted-foreground">
-                                Member since
-                            </span>
-                            <strong className="ml-auto">{memberSince}</strong>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
-                            <Mail className="text-muted-foreground h-4 w-4" />
-                            <span className="text-muted-foreground">
-                                Contact email
-                            </span>
-                            <strong className="ml-auto max-w-[55%] truncate">
-                                {auth.user.email}
-                            </strong>
-                        </div>
+                            <div className="flex items-center gap-3 text-sm">
+                                <CalendarDays className="text-muted-foreground h-4 w-4" />
+                                <span className="text-muted-foreground">
+                                    Member since
+                                </span>
+                                <strong className="ml-auto">
+                                    {memberSince}
+                                </strong>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm">
+                                <Mail className="text-muted-foreground h-4 w-4" />
+                                <span className="text-muted-foreground">
+                                    Contact email
+                                </span>
+                                <strong className="ml-auto max-w-[55%] truncate">
+                                    {auth.user.email}
+                                </strong>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

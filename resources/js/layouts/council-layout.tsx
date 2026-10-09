@@ -288,7 +288,10 @@ export default function CouncilLayout({
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     asChild
-                                    isActive={url.split('?')[0] === '/settings/profile'}
+                                    isActive={
+                                        url.split('?')[0] ===
+                                        '/settings/profile'
+                                    }
                                     tooltip={{ children: 'Settings' }}
                                 >
                                     <Link href="/settings/profile">
@@ -455,7 +458,9 @@ export default function CouncilLayout({
                                         <div className="max-h-[min(32rem,75vh)] divide-y divide-[#E1E4EA] overflow-y-auto">
                                             <NotificationSection
                                                 title="Task updates"
-                                                items={notifications.task_assignments}
+                                                items={
+                                                    notifications.task_assignments
+                                                }
                                                 metadata={() => 'Tasking'}
                                             />
                                             <NotificationSection

@@ -213,7 +213,9 @@ function ResetPassword({ user }: { user: UserRow }) {
                         aria-label={`New password for ${user.name}`}
                         placeholder="New password (12+ characters)"
                         value={form.data.password}
-                        onChange={(event) => form.setData('password', event.target.value)}
+                        onChange={(event) =>
+                            form.setData('password', event.target.value)
+                        }
                         className="h-8 w-full rounded border border-[#D5DAE3] px-2 text-xs"
                         required
                         minLength={12}
@@ -224,19 +226,38 @@ function ResetPassword({ user }: { user: UserRow }) {
                         aria-label={`Confirm password for ${user.name}`}
                         placeholder="Confirm password"
                         value={form.data.password_confirmation}
-                        onChange={(event) => form.setData('password_confirmation', event.target.value)}
+                        onChange={(event) =>
+                            form.setData(
+                                'password_confirmation',
+                                event.target.value,
+                            )
+                        }
                         className="h-8 w-full rounded border border-[#D5DAE3] px-2 text-xs"
                         required
                         minLength={12}
                     />
-                    {(form.errors.password || form.errors.password_confirmation) && (
-                        <p className="text-xs text-red-600">{form.errors.password ?? form.errors.password_confirmation}</p>
+                    {(form.errors.password ||
+                        form.errors.password_confirmation) && (
+                        <p className="text-xs text-red-600">
+                            {form.errors.password ??
+                                form.errors.password_confirmation}
+                        </p>
                     )}
                     <div className="flex gap-2">
-                        <button disabled={form.processing} className="rounded bg-[#176b35] px-2 py-1 text-xs font-semibold text-white disabled:opacity-60">
+                        <button
+                            disabled={form.processing}
+                            className="rounded bg-[#176b35] px-2 py-1 text-xs font-semibold text-white disabled:opacity-60"
+                        >
                             Save password
                         </button>
-                        <button type="button" onClick={() => { setOpen(false); form.reset(); }} className="px-2 py-1 text-xs text-[#5B6478]">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setOpen(false);
+                                form.reset();
+                            }}
+                            className="px-2 py-1 text-xs text-[#5B6478]"
+                        >
                             Cancel
                         </button>
                     </div>

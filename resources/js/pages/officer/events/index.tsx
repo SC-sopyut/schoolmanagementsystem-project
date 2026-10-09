@@ -88,144 +88,134 @@ export default function Events({
                 )}
             </div>
 
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
-                    <div className="xl:col-span-2">
-                        <h2 className="text-lg font-bold">Upcoming Events</h2>
-                        <p className="mb-4 text-sm text-[#5B6478]">
-                            Manage planning, checklist, and budgets for upcoming
-                            civic activities.
-                        </p>
-                        {events.length === 0 && (
-                            <Card className="p-8 text-center text-sm text-[#5B6478]">
-                                No events yet.
-                            </Card>
-                        )}
-                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                            {events.map((e) => {
-                                const tone = toneFor(e.organization);
-                                const budgetPct = e.budget_allocated
-                                    ? (e.budget_spent / e.budget_allocated) *
-                                      100
-                                    : 0;
-                                const checkPct = e.checklist_total
-                                    ? (e.checklist_done / e.checklist_total) *
-                                      100
-                                    : 0;
-                                return (
-                                    <Card
-                                        key={e.id}
-                                        className="overflow-hidden"
-                                    >
-                                        <div
-                                            className={`h-24 bg-gradient-to-br ${GRADIENT[tone]}`}
-                                        />
-                                        <div className="p-4">
-                                            <div className="mb-2 flex items-center justify-between">
-                                                <Pill tone={tone} dot>
-                                                    {e.organization}
-                                                </Pill>
-                                                <span className="flex items-center gap-1 text-xs text-[#5B6478]">
-                                                    <Users className="h-3.5 w-3.5" />
-                                                    {e.attendees_count} RSVP
-                                                </span>
-                                            </div>
-                                            <p className="font-semibold">
-                                                {e.title}
-                                            </p>
-                                            <p className="mb-3 flex flex-wrap items-center gap-x-3 text-xs text-[#5B6478]">
-                                                <span>
-                                                    {new Date(
-                                                        e.starts_at,
-                                                    ).toLocaleString(
-                                                        undefined,
-                                                        {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            hour: 'numeric',
-                                                            minute: '2-digit',
-                                                        },
-                                                    )}
-                                                </span>
-                                                {e.location && (
-                                                    <span className="flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3" />
-                                                        {e.location}
-                                                    </span>
-                                                )}
-                                            </p>
-                                            <div className="space-y-3 border-t border-[#E1E4EA] pt-3 text-xs">
-                                                <div>
-                                                    <div className="mb-1 flex justify-between">
-                                                        <span className="text-[#5B6478]">
-                                                            Budget Allocation
-                                                        </span>
-                                                        <b>
-                                                            {money(
-                                                                e.budget_spent,
-                                                            )}{' '}
-                                                            /{' '}
-                                                            {money(
-                                                                e.budget_allocated,
-                                                            )}
-                                                        </b>
-                                                    </div>
-                                                    <ProgressBar
-                                                        value={budgetPct}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <div className="mb-1 flex justify-between">
-                                                        <span className="text-[#5B6478]">
-                                                            Planning Checklist
-                                                        </span>
-                                                        <b>
-                                                            {e.checklist_done}/
-                                                            {e.checklist_total}{' '}
-                                                            Tasks
-                                                        </b>
-                                                    </div>
-                                                    <ProgressBar
-                                                        value={checkPct}
-                                                        tone="green"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="space-y-5">
-                        <Calendar events={events} />
-                        <Card className="p-5">
-                            <h3 className="mb-3 text-sm font-semibold">
-                                Upcoming Milestones
-                            </h3>
-                            {upcoming.length === 0 && (
-                                <p className="text-sm text-[#5B6478]">
-                                    Nothing scheduled.
-                                </p>
-                            )}
-                            <ul className="space-y-3">
-                                {upcoming.map((e) => (
-                                    <li key={e.id} className="flex gap-3">
-                                        <span className="mt-1.5 h-2 w-2 rounded-full bg-blue-600" />
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                {e.title}
-                                            </p>
-                                            <p className="text-xs text-[#5B6478]">
-                                                {shortDate(e.starts_at)}
-                                            </p>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+                <div className="xl:col-span-2">
+                    <h2 className="text-lg font-bold">Upcoming Events</h2>
+                    <p className="mb-4 text-sm text-[#5B6478]">
+                        Manage planning, checklist, and budgets for upcoming
+                        civic activities.
+                    </p>
+                    {events.length === 0 && (
+                        <Card className="p-8 text-center text-sm text-[#5B6478]">
+                            No events yet.
                         </Card>
+                    )}
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        {events.map((e) => {
+                            const tone = toneFor(e.organization);
+                            const budgetPct = e.budget_allocated
+                                ? (e.budget_spent / e.budget_allocated) * 100
+                                : 0;
+                            const checkPct = e.checklist_total
+                                ? (e.checklist_done / e.checklist_total) * 100
+                                : 0;
+                            return (
+                                <Card key={e.id} className="overflow-hidden">
+                                    <div
+                                        className={`h-24 bg-gradient-to-br ${GRADIENT[tone]}`}
+                                    />
+                                    <div className="p-4">
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <Pill tone={tone} dot>
+                                                {e.organization}
+                                            </Pill>
+                                            <span className="flex items-center gap-1 text-xs text-[#5B6478]">
+                                                <Users className="h-3.5 w-3.5" />
+                                                {e.attendees_count} RSVP
+                                            </span>
+                                        </div>
+                                        <p className="font-semibold">
+                                            {e.title}
+                                        </p>
+                                        <p className="mb-3 flex flex-wrap items-center gap-x-3 text-xs text-[#5B6478]">
+                                            <span>
+                                                {new Date(
+                                                    e.starts_at,
+                                                ).toLocaleString(undefined, {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                })}
+                                            </span>
+                                            {e.location && (
+                                                <span className="flex items-center gap-1">
+                                                    <MapPin className="h-3 w-3" />
+                                                    {e.location}
+                                                </span>
+                                            )}
+                                        </p>
+                                        <div className="space-y-3 border-t border-[#E1E4EA] pt-3 text-xs">
+                                            <div>
+                                                <div className="mb-1 flex justify-between">
+                                                    <span className="text-[#5B6478]">
+                                                        Budget Allocation
+                                                    </span>
+                                                    <b>
+                                                        {money(e.budget_spent)}{' '}
+                                                        /{' '}
+                                                        {money(
+                                                            e.budget_allocated,
+                                                        )}
+                                                    </b>
+                                                </div>
+                                                <ProgressBar
+                                                    value={budgetPct}
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="mb-1 flex justify-between">
+                                                    <span className="text-[#5B6478]">
+                                                        Planning Checklist
+                                                    </span>
+                                                    <b>
+                                                        {e.checklist_done}/
+                                                        {e.checklist_total}{' '}
+                                                        Tasks
+                                                    </b>
+                                                </div>
+                                                <ProgressBar
+                                                    value={checkPct}
+                                                    tone="green"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            );
+                        })}
                     </div>
                 </div>
+
+                <div className="space-y-5">
+                    <Calendar events={events} />
+                    <Card className="p-5">
+                        <h3 className="mb-3 text-sm font-semibold">
+                            Upcoming Milestones
+                        </h3>
+                        {upcoming.length === 0 && (
+                            <p className="text-sm text-[#5B6478]">
+                                Nothing scheduled.
+                            </p>
+                        )}
+                        <ul className="space-y-3">
+                            {upcoming.map((e) => (
+                                <li key={e.id} className="flex gap-3">
+                                    <span className="mt-1.5 h-2 w-2 rounded-full bg-blue-600" />
+                                    <div>
+                                        <p className="text-sm font-medium">
+                                            {e.title}
+                                        </p>
+                                        <p className="text-xs text-[#5B6478]">
+                                            {shortDate(e.starts_at)}
+                                        </p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </Card>
+                </div>
+            </div>
 
             <CreateEvent
                 open={open}
