@@ -10,6 +10,15 @@ class DocumentFolder extends Model
 {
     protected $fillable = ['organization_id', 'parent_id', 'name'];
 
-    public function organization(): BelongsTo { return $this->belongsTo(Organization::class); }
-    public function documents(): HasMany { return $this->hasMany(Document::class, 'folder_id'); }
+    /** @return BelongsTo<Organization, $this> */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    /** @return HasMany<Document, $this> */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class, 'folder_id');
+    }
 }

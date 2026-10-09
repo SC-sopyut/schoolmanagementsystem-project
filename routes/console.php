@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
 use App\Models\Admin;
+use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;

@@ -92,7 +92,7 @@ class DashboardController extends Controller
             'recent_reveals' => $recentReveals,
             'recent_activity' => AuditLog::query()->with(['actor', 'organization:id,name'])->recent()->limit(6)->get()
                 ->map(fn (AuditLog $log) => [
-                    'id' => $log->id, 'actor' => $log->actor?->name ?? 'System',
+                    'id' => $log->id, 'actor' => $log->actorName() ?? 'System',
                     'action' => $log->action, 'organization' => $log->organization?->name,
                     'detail' => $log->metadata['name'] ?? $log->metadata['title'] ?? $log->metadata['user'] ?? $log->metadata['tracking_code'] ?? null,
                     'created_at' => $log->created_at,
@@ -106,7 +106,7 @@ class DashboardController extends Controller
                     'id' => $log->id,
                     'name' => $log->metadata['name'] ?? 'Deleted document',
                     'versions' => (int) ($log->metadata['versions'] ?? 1),
-                    'actor' => $log->actor?->name ?? 'Unknown user',
+                    'actor' => $log->actorName() ?? 'Unknown user',
                     'organization' => $log->organization?->name,
                     'deleted_at' => $log->created_at,
                 ]),

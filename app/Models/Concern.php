@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Concern extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $fillable = [
@@ -24,12 +25,13 @@ class Concern extends Model
     ];
 
     public const STATUSES = ['submitted', 'reviewed', 'forwarded', 'resolved'];
+
     public const PRIORITIES = ['low', 'medium', 'high'];
 
     protected static function booted(): void
     {
         static::creating(function (Concern $concern) {
-            $concern->tracking_code ??= 'CON-' . now()->format('Y') . '-' . str_pad(
+            $concern->tracking_code ??= 'CON-'.now()->format('Y').'-'.str_pad(
                 (string) (static::whereYear('created_at', now()->year)->count() + 1),
                 4,
                 '0',
@@ -44,21 +46,25 @@ class Concern extends Model
         });
     }
 
+    /** @return BelongsTo<User, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(User::class, 'student_id');
     }
 
+    /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
     }
 
+    /** @return BelongsTo<Officer, $this> */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(Officer::class, 'reviewed_by');
     }
 
+    /** @return HasMany<ConcernUpdate, $this> */
     public function updatesTimeline(): HasMany
     {
         return $this->hasMany(ConcernUpdate::class)->orderBy('created_at');
@@ -73,6 +79,7 @@ class Concern extends Model
      * and read `student` directly, and it must log that read (see StoreLog note
      * in Admin\ConcernController).
      */
+    /** @return array<string, mixed> */
     public function toOfficerArray(): array
     {
         return [

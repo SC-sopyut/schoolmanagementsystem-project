@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Officer\StoreActivityLogRequest;
 use App\Models\ActivityLog;
 use App\Models\AuditLog;
+use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +16,7 @@ class ActivityLogController extends Controller
     /** An officer's own accreditation log, scoped to their own organization only. */
     public function index(): Response
     {
-        $officer = request()->user()->officerProfile;
+        $officer = OfficerScope::profile(request()->user());
 
         $logs = ActivityLog::query()
             ->where('officer_id', $officer->id)
@@ -35,7 +36,7 @@ class ActivityLogController extends Controller
      */
     public function store(StoreActivityLogRequest $request): RedirectResponse
     {
-        $officer = $request->user()->officerProfile;
+        $officer = OfficerScope::profile($request->user());
 
         $activity = ActivityLog::create([
             ...$request->validated(),

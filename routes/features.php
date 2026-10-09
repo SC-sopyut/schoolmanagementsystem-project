@@ -65,8 +65,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('board', [Officer\TaskBoardController::class, 'overview'])->name('board');
         Route::post('committees/{committee}/tasks', [Officer\TaskBoardController::class, 'store'])->name('tasks.store');
         Route::patch('tasks/{task}/status', [Officer\TaskBoardController::class, 'updateStatus'])->name('tasks.status');
+        Route::delete('tasks/{task}', [Officer\TaskBoardController::class, 'destroy'])->name('tasks.destroy');
+        Route::post('task-history/{auditLog}/restore', [Officer\TaskBoardController::class, 'restore'])->name('tasks.restore');
 
         Route::get('events', [Officer\EventPlanningController::class, 'index'])->name('events.index');
+        Route::get('voting', [Officer\ElectionController::class, 'index'])->name('voting.index');
+        Route::post('voting', [Officer\ElectionController::class, 'store'])->name('voting.store');
+        Route::post('voting/{election}/open', [Officer\ElectionController::class, 'open'])->name('voting.open');
+        Route::post('voting/{election}/close', [Officer\ElectionController::class, 'close'])->name('voting.close');
+        Route::post('voting/{election}/publish-results', [Officer\ElectionController::class, 'publish'])->name('voting.publish');
         Route::post('events', [Officer\EventPlanningController::class, 'store'])->name('events.store');
         Route::post('events/{event}/budget-items', [Officer\EventPlanningController::class, 'storeBudgetItem'])->name('events.budget-items.store');
         Route::patch('events/{event}/checklist-items/{checklistItem}/toggle', [Officer\EventPlanningController::class, 'toggleChecklistItem'])->name('events.checklist-items.toggle');

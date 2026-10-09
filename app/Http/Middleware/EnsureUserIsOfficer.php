@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\OfficerScope;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +20,7 @@ class EnsureUserIsOfficer
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->officerProfile !== null, 403, 'Officer access only.');
+        OfficerScope::profile($request->user());
 
         return $next($request);
     }

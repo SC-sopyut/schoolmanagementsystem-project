@@ -41,7 +41,10 @@ Route::middleware(['auth:admin', 'is_admin'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('memberships', [OrganizationMembershipController::class, 'index'])->name('memberships.index');
     Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::patch('users/{user}/password', [UserController::class, 'resetPassword'])->name('users.password');
     Route::post('memberships', [OrganizationMembershipController::class, 'store'])->name('memberships.store');
+    Route::delete('memberships/{user}/{organization}', [OrganizationMembershipController::class, 'destroy'])->name('memberships.destroy');
+    Route::delete('officer-affiliations/{user}/{organization}', [OrganizationMembershipController::class, 'destroyOfficerAffiliation'])->name('officer-affiliations.destroy');
     Route::get('audit', [AuditController::class, 'index'])->name('audit.index');
 
     Route::get('concerns', [ConcernController::class, 'index'])->name('concerns.index');

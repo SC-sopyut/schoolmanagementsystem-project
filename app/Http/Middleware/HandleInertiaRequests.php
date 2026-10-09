@@ -53,7 +53,10 @@ class HandleInertiaRequests extends Middleware
             ]);
         }
         foreach ($memberOrganizations as $organization) {
-            $roleAssignments->push(['label' => 'Member', 'organization' => $organization->name]);
+            if ($officerProfile && $officerProfile->organization_id === $organization->id) {
+                continue;
+            }
+            $roleAssignments->push(['label' => $officerProfile ? 'Officer' : 'Member', 'organization' => $organization->name]);
         }
         if ($roleAssignments->isEmpty() && $account) {
             $roleAssignments->push(['label' => 'Student', 'organization' => null]);
@@ -87,7 +90,7 @@ class HandleInertiaRequests extends Middleware
                     'id' => $event->id,
                     'title' => $event->title,
                     'body' => trim(($event->starts_at?->format('M j, g:i A') ?? '').($event->location ? ' · '.$event->location : '')),
-                    'organization' => $event->organization?->name ?? 'Council-wide event',
+                    'organization' => $event->organization->name ?? 'Council-wide event',
                     'published_at' => $event->starts_at?->diffForHumans(),
                     'url' => $account->officerProfile ? '/officer/events' : '/student/events',
                 ])->values(),
@@ -103,14 +106,22 @@ class HandleInertiaRequests extends Middleware
                     return [
                         'id' => $concern->id,
                         'title' => $concern->subject,
-                        'body' => trim(($update?->stage_label ?? ucfirst($concern->status)).($update?->message ? ' · '.$update->message : '')),
+                        'body' => trim(($update->stage_label ?? ucfirst($concern->status)).($update->message ? ' · '.$update->message : '')),
                         'tracking_code' => $concern->tracking_code,
                         'organization' => $concern->organization?->name,
                         'published_at' => $concern->updated_at?->diffForHumans(),
                         'url' => '/student/concerns',
                     ];
                 })->values(),
-        ] : ['announcements' => [], 'upcoming_events' => [], 'concern_updates' => []];
+            'task_assignments' => $account->notifications()->whereNull('read_at')->latest()->limit(5)->get()
+                ->map(fn ($notification) => [
+                    'id' => $notification->id,
+                    'title' => $notification->data['title'] ?? 'Task update',
+                    'body' => $notification->data['body'] ?? '',
+                    'published_at' => $notification->created_at?->diffForHumans(),
+                    'url' => $notification->data['url'] ?? '/officer/board',
+                ])->values(),
+        ] : ['announcements' => [], 'upcoming_events' => [], 'concern_updates' => [], 'task_assignments' => []];
 
         return [
             ...parent::share($request),

@@ -12,7 +12,21 @@ class Document extends Model
 
     public const ACCESS_LEVELS = ['public', 'org_only'];
 
-    public function folder(): BelongsTo { return $this->belongsTo(DocumentFolder::class, 'folder_id'); }
-    public function uploader(): BelongsTo { return $this->belongsTo(User::class, 'uploaded_by'); }
-    public function versions(): HasMany { return $this->hasMany(DocumentVersion::class)->orderByDesc('version'); }
+    /** @return BelongsTo<DocumentFolder, $this> */
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(DocumentFolder::class, 'folder_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /** @return HasMany<DocumentVersion, $this> */
+    public function versions(): HasMany
+    {
+        return $this->hasMany(DocumentVersion::class)->orderByDesc('version');
+    }
 }

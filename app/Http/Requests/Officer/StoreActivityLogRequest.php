@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Officer;
 
 use App\Models\ActivityLog;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,9 +14,12 @@ class StoreActivityLogRequest extends FormRequest
         // Any authenticated officer may log an activity for their own organization;
         // the controller forces officer_id/organization_id from the session rather
         // than trusting client input (see StoreActivityLogRequest usage note).
-        return $this->user()->officerProfile !== null;
+        $user = $this->user();
+
+        return $user instanceof User && $user->officerProfile !== null;
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

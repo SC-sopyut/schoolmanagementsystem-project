@@ -1,12 +1,11 @@
 import {
     CircleAlert,
-    Columns3,
+    ClipboardList,
     CalendarDays,
     FolderOpen,
     LayoutDashboard,
     Megaphone,
     Send,
-    Settings,
     Users,
     Vote,
     Wallet,
@@ -32,36 +31,29 @@ export type NavItem = {
     icon: ComponentType<{ className?: string }>;
 };
 
-// href === null  ->  screen exists in the Figma but isn't built yet: rendered muted, not clickable.
-const settings: NavItem = {
-    label: 'Settings',
-    href: '/settings/profile',
-    icon: Settings,
-};
-
 /** Figma: "Council Officer" sidebar. */
 export const officerNav = (): NavItem[] => [
     { label: 'Dashboard', href: officerDashboard().url, icon: LayoutDashboard },
     { label: 'Announcements', href: '/officer/announcements', icon: Megaphone },
-    { label: 'Kanban Board', href: board().url, icon: Columns3 },
+    { label: 'Tasking', href: board().url, icon: ClipboardList },
     { label: 'Documents', href: documents().url, icon: FolderOpen },
     { label: 'Concerns', href: officerConcerns().url, icon: CircleAlert },
     { label: 'Events', href: officerEvents().url, icon: CalendarDays },
-    { label: 'Voting', href: officerEvents().url + '?tab=voting', icon: Vote },
+    { label: 'Voting', href: '/officer/voting', icon: Vote },
     { label: 'Directory', href: null, icon: Users },
-    settings,
 ];
 
-/** Figma: "President" sidebar (no Kanban/Voting/Directory; adds Budget + Members). */
+/** President sidebar adds tasking, voting, budget, and members. */
 export const presidentNav = (): NavItem[] => [
     { label: 'Dashboard', href: officerDashboard().url, icon: LayoutDashboard },
     { label: 'Announcements', href: '/officer/announcements', icon: Megaphone },
+    { label: 'Tasking', href: board().url, icon: ClipboardList },
     { label: 'Concerns', href: officerConcerns().url, icon: CircleAlert },
     { label: 'Events', href: officerEvents().url, icon: CalendarDays },
+    { label: 'Voting', href: '/officer/voting', icon: Vote },
     { label: 'Budget', href: '/officer/budget', icon: Wallet },
     { label: 'Members', href: '/officer/members', icon: Users },
     { label: 'Documents', href: documents().url, icon: FolderOpen },
-    settings,
 ];
 
 /** Figma: "Student Portal" sidebar. */
@@ -75,5 +67,4 @@ export const studentNav = (): NavItem[] => [
         href: studentAnnouncements().url,
         icon: Megaphone,
     },
-    settings,
 ];

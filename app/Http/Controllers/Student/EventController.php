@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventAttendee;
+use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -14,7 +15,7 @@ class EventController extends Controller
 {
     public function index(): Response
     {
-        $user = request()->user();
+        $user = OfficerScope::user(request()->user());
         $orgIds = $user->organizations()->pluck('organizations.id');
 
         $events = Event::query()

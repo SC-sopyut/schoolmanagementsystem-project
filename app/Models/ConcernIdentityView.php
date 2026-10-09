@@ -15,11 +15,13 @@ class ConcernIdentityView extends Model
         'viewed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Admin, $this> */
     public function admin(): BelongsTo
     {
         return $this->belongsTo(Admin::class);
     }
 
+    /** @return BelongsTo<Concern, $this> */
     public function concern(): BelongsTo
     {
         return $this->belongsTo(Concern::class);

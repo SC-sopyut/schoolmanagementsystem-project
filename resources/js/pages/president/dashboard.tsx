@@ -1,6 +1,8 @@
 import CouncilLayout from '@/layouts/council-layout';
 import OfficerAnalytics from '@/components/council/officer-analytics';
-import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
+import DeletedUploads, {
+    type DeletedUpload,
+} from '@/components/council/deleted-uploads';
 import {
     Card,
     Pill,
@@ -29,7 +31,16 @@ type Concern = {
 };
 type Props = {
     label: string;
-    analytics: { tasks_by_status: { status: string; count: number }[]; concerns_by_status: { status: string; count: number }[]; monthly_activity: { month: string; key: string; tasks: number; concerns: number }[] };
+    analytics: {
+        tasks_by_status: { status: string; count: number }[];
+        concerns_by_status: { status: string; count: number }[];
+        monthly_activity: {
+            month: string;
+            key: string;
+            tasks: number;
+            concerns: number;
+        }[];
+    };
     first_name: string;
     stats: {
         open_concerns: number;

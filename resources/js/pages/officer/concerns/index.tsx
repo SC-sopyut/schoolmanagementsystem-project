@@ -70,10 +70,13 @@ export default function ConcernInbox({ concerns }: { concerns: Concern[] }) {
                             <li key={x.id}>
                                 <button
                                     onClick={() => setSelectedId(x.id)}
-                                    className={`w-full p-4 text-left ${x.id === selectedId ? 'bg-blue-50/60' : 'hover:bg-slate-50'}`}
+                                    aria-pressed={x.id === selectedId}
+                                    className={`w-full p-4 text-left transition-colors ${x.id === selectedId ? 'bg-[#155a2b] text-white ring-1 ring-[#72bd79] ring-inset' : 'hover:bg-[#173b25]'}`}
                                 >
                                     <div className="mb-1 flex items-center justify-between gap-2">
-                                        <span className="text-xs font-semibold text-blue-600">
+                                        <span
+                                            className={`text-xs font-semibold ${x.id === selectedId ? 'text-[#b8efbd]' : 'text-blue-600'}`}
+                                        >
                                             {x.tracking_code}
                                         </span>
                                         <Pill tone={STATUS[x.status].tone}>
@@ -83,7 +86,9 @@ export default function ConcernInbox({ concerns }: { concerns: Concern[] }) {
                                     <p className="text-sm font-medium">
                                         {x.subject}
                                     </p>
-                                    <p className="text-xs text-[#5B6478]">
+                                    <p
+                                        className={`text-xs ${x.id === selectedId ? 'text-[#d8e9d2]' : 'text-[#5B6478]'}`}
+                                    >
                                         {x.submitted_by} ·{' '}
                                         {x.organization?.name} ·{' '}
                                         {timeAgo(x.created_at)}

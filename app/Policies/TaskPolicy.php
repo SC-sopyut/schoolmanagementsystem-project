@@ -18,7 +18,7 @@ class TaskPolicy
 
         return $officer !== null
             && $officer->isTaskManager()
-            && ($officer->hasCouncilWideTaskAuthority() || $officer->organization_id === $committee->organization_id);
+            && ($officer->hasCouncilWideTaskAuthority() || $officer->visibleOrganizationIds()->contains($committee->organization_id));
     }
 
     /** Only the assignee or a manager of the task's committee may move it across the board. */
@@ -28,6 +28,11 @@ class TaskPolicy
             return true;
         }
 
+        return $this->manageBoard($user, $task->committee);
+    }
+
+    public function delete(User $user, Task $task): bool
+    {
         return $this->manageBoard($user, $task->committee);
     }
 }

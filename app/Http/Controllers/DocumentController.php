@@ -7,6 +7,7 @@ use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\FeedItem;
 use App\Models\Organization;
+use App\Models\User;
 use App\Support\OrgScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class DocumentController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        abort_unless($user instanceof User, 403);
         $memberOrgIds = OrgScope::idsFor($user);
 
         // Every organization gets a root folder the first time anyone opens the repository.
@@ -70,7 +72,7 @@ class DocumentController extends Controller
                     'id' => $log->id,
                     'name' => $log->metadata['name'] ?? 'Deleted document',
                     'versions' => (int) ($log->metadata['versions'] ?? 1),
-                    'actor' => $log->actor?->name ?? 'Unknown user',
+                    'actor' => $log->actorName() ?? 'Unknown user',
                     'organization' => $log->organization?->name,
                     'deleted_at' => $log->created_at,
                 ]),
@@ -86,6 +88,8 @@ class DocumentController extends Controller
     public function store(Request $request, DocumentFolder $folder): RedirectResponse
     {
         $this->authorize('upload', $folder);
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
 
         $data = $request->validate([
             'file' => ['required', 'file', 'max:25600', 'mimes:pdf,doc,docx,xls,xlsx,csv,ppt,pptx,txt,png,jpg,jpeg'],
@@ -96,23 +100,23 @@ class DocumentController extends Controller
         $displayName = Str::limit(basename($file->getClientOriginalName()), 150, '');
         $path = $file->storeAs('documents/'.$folder->id, Str::uuid().'.'.$file->extension(), 'local');
 
-        DB::transaction(function () use ($request, $folder, $data, $file, $displayName, $path) {
+        DB::transaction(function () use ($request, $user, $folder, $data, $file, $displayName, $path) {
             $doc = Document::where('folder_id', $folder->id)->where('name', $displayName)->lockForUpdate()->first();
-            $version = ($doc?->current_version ?? 0) + 1;
+            $version = ($doc->current_version ?? 0) + 1;
 
             $doc ??= Document::create([
                 'folder_id' => $folder->id, 'name' => $displayName, 'file_type' => strtolower($file->extension()),
-                'access_level' => $data['access_level'], 'current_version' => 1, 'uploaded_by' => $request->user()->id,
+                'access_level' => $data['access_level'], 'current_version' => 1, 'uploaded_by' => $user->id,
             ]);
             $doc->update(['current_version' => $version, 'access_level' => $data['access_level']]);
 
             $doc->versions()->create([
                 'version' => $version, 'path' => $path, 'size' => $file->getSize(),
-                'uploaded_by' => $request->user()->id, 'created_at' => now(),
+                'uploaded_by' => $user->id, 'created_at' => now(),
             ]);
 
-            FeedItem::record($request->user(), $folder->organization_id, "uploaded \"{$displayName}\"");
-            AuditLog::create(['actor_type' => $request->user()->getMorphClass(), 'actor_id' => $request->user()->id, 'action' => 'document.uploaded', 'subject_type' => Document::class, 'subject_id' => $doc->id, 'organization_id' => $folder->organization_id, 'metadata' => ['name' => $displayName, 'version' => $version, 'access_level' => $data['access_level']], 'ip_address' => $request->ip()]);
+            FeedItem::record($user, $folder->organization_id, "uploaded \"{$displayName}\"");
+            AuditLog::create(['actor_type' => $user->getMorphClass(), 'actor_id' => $user->id, 'action' => 'document.uploaded', 'subject_type' => Document::class, 'subject_id' => $doc->id, 'organization_id' => $folder->organization_id, 'metadata' => ['name' => $displayName, 'version' => $version, 'access_level' => $data['access_level']], 'ip_address' => $request->ip()]);
         });
 
         return back()->with('success', 'Document uploaded.');
@@ -176,16 +180,27 @@ class DocumentController extends Controller
         $xml = $zip?->getFromName('word/document.xml');
         $zip?->close();
         $document = $this->loadOfficeXml($xml);
-        if (! $document) return '<p class="empty">This Word file could not be previewed. Download it to view the original.</p>';
+        if (! $document) {
+            return '<p class="empty">This Word file could not be previewed. Download it to view the original.</p>';
+        }
 
         $xpath = new \DOMXPath($document);
         $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
         $paragraphs = $xpath->query('//w:body/w:p | //w:body/w:tbl/w:tr/w:tc/w:p');
         $items = [];
         foreach ($paragraphs ?: [] as $paragraph) {
+            if (! $paragraph instanceof \DOMElement) {
+                continue;
+            }
             $text = '';
-            foreach ($xpath->query('.//w:t', $paragraph) ?: [] as $node) $text .= $node->textContent;
-            if (trim($text) !== '') $items[] = '<p>'.e($text).'</p>';
+            foreach ($xpath->query('.//w:t', $paragraph) ?: [] as $node) {
+                if ($node instanceof \DOMElement) {
+                    $text .= $node->textContent;
+                }
+            }
+            if (trim($text) !== '') {
+                $items[] = '<p>'.e($text).'</p>';
+            }
         }
 
         return $items ? implode('', $items) : '<p class="empty">This Word file contains no readable text.</p>';
@@ -194,26 +209,43 @@ class DocumentController extends Controller
     private function previewPptx(string $path): string
     {
         $zip = $this->openOfficeArchive($path);
-        if (! $zip) return '<p class="empty">This presentation could not be previewed. Download it to view the original.</p>';
+        if (! $zip) {
+            return '<p class="empty">This presentation could not be previewed. Download it to view the original.</p>';
+        }
         $slides = [];
         $slidePaths = [];
         for ($index = 0; $index < $zip->numFiles; $index++) {
             $entry = $zip->getNameIndex($index);
-            if (is_string($entry) && preg_match('/^ppt\/slides\/slide[0-9]+\.xml$/', $entry)) $slidePaths[] = $entry;
+            if (is_string($entry) && preg_match('/^ppt\/slides\/slide[0-9]+\.xml$/', $entry)) {
+                $slidePaths[] = $entry;
+            }
         }
         natsort($slidePaths);
         foreach ($slidePaths as $slidePath) {
             $xml = $zip->getFromName($slidePath);
-            if ($xml === false) continue;
+            if ($xml === false) {
+                continue;
+            }
             $document = $this->loadOfficeXml($xml);
-            if (! $document) continue;
+            if (! $document) {
+                continue;
+            }
             $xpath = new \DOMXPath($document);
             $xpath->registerNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
             $paragraphs = [];
             foreach ($xpath->query('//a:p') ?: [] as $paragraph) {
+                if (! $paragraph instanceof \DOMElement) {
+                    continue;
+                }
                 $text = '';
-                foreach ($xpath->query('.//a:t', $paragraph) ?: [] as $node) $text .= $node->textContent;
-                if (trim($text) !== '') $paragraphs[] = '<p>'.e($text).'</p>';
+                foreach ($xpath->query('.//a:t', $paragraph) ?: [] as $node) {
+                    if ($node instanceof \DOMElement) {
+                        $text .= $node->textContent;
+                    }
+                }
+                if (trim($text) !== '') {
+                    $paragraphs[] = '<p>'.e($text).'</p>';
+                }
             }
             $slides[] = '<section><h2>Slide '.$index.'</h2>'.($paragraphs ? implode('', $paragraphs) : '<p class="empty">No readable text on this slide.</p>').'</section>';
         }
@@ -225,15 +257,24 @@ class DocumentController extends Controller
     private function previewXlsx(string $path): string
     {
         $zip = $this->openOfficeArchive($path);
-        if (! $zip) return '<p class="empty">This spreadsheet could not be previewed. Download it to view the original.</p>';
+        if (! $zip) {
+            return '<p class="empty">This spreadsheet could not be previewed. Download it to view the original.</p>';
+        }
         $sharedXml = $zip->getFromName('xl/sharedStrings.xml');
         $sharedDoc = $this->loadOfficeXml($sharedXml);
         $sharedStrings = [];
         if ($sharedDoc) {
             $sharedXPath = new \DOMXPath($sharedDoc);
             foreach ($sharedXPath->query('//*[local-name()="si"]') ?: [] as $item) {
+                if (! $item instanceof \DOMElement) {
+                    continue;
+                }
                 $value = '';
-                foreach ($sharedXPath->query('.//*[local-name()="t"]', $item) ?: [] as $node) $value .= $node->textContent;
+                foreach ($sharedXPath->query('.//*[local-name()="t"]', $item) ?: [] as $node) {
+                    if ($node instanceof \DOMElement) {
+                        $value .= $node->textContent;
+                    }
+                }
                 $sharedStrings[] = $value;
             }
         }
@@ -242,38 +283,59 @@ class DocumentController extends Controller
         $sheetPaths = [];
         for ($index = 0; $index < $zip->numFiles; $index++) {
             $entry = $zip->getNameIndex($index);
-            if (is_string($entry) && preg_match('/^xl\/worksheets\/sheet[0-9]+\.xml$/', $entry)) $sheetPaths[] = $entry;
+            if (is_string($entry) && preg_match('/^xl\/worksheets\/sheet[0-9]+\.xml$/', $entry)) {
+                $sheetPaths[] = $entry;
+            }
         }
         natsort($sheetPaths);
         foreach ($sheetPaths as $sheetPath) {
             $sheet = $this->loadOfficeXml($zip->getFromName($sheetPath));
-            if (! $sheet) continue;
+            if (! $sheet) {
+                continue;
+            }
             $xpath = new \DOMXPath($sheet);
             $rows = [];
             foreach ($xpath->query('//*[local-name()="sheetData"]/*[local-name()="row"]') ?: [] as $row) {
+                if (! $row instanceof \DOMElement) {
+                    continue;
+                }
                 $cells = [];
                 foreach ($xpath->query('./*[local-name()="c"]', $row) ?: [] as $cell) {
-                    $ref = $cell->attributes?->getNamedItem('r')?->nodeValue ?? '';
+                    if (! $cell instanceof \DOMElement) {
+                        continue;
+                    }
+                    $ref = $cell->attributes->getNamedItem('r')->nodeValue ?? '';
                     preg_match('/^[A-Z]+/', $ref, $columnMatch);
                     $column = $this->columnNumber($columnMatch[0] ?? 'A');
-                    $type = $cell->attributes?->getNamedItem('t')?->nodeValue;
-                    $valueNode = $xpath->query('./*[local-name()="v"]', $cell)?->item(0);
-                    $value = $valueNode?->textContent ?? '';
-                    if ($type === 's') $value = $sharedStrings[(int) $value] ?? '';
+                    $type = $cell->attributes->getNamedItem('t')?->nodeValue;
+                    $valueNodes = $xpath->query('./*[local-name()="v"]', $cell);
+                    $valueNode = $valueNodes === false ? null : $valueNodes->item(0);
+                    $value = $valueNode instanceof \DOMElement ? $valueNode->textContent : '';
+                    if ($type === 's') {
+                        $value = $sharedStrings[(int) $value] ?? '';
+                    }
                     if ($type === 'inlineStr') {
                         $value = '';
-                        foreach ($xpath->query('.//*[local-name()="t"]', $cell) ?: [] as $node) $value .= $node->textContent;
+                        foreach ($xpath->query('.//*[local-name()="t"]', $cell) ?: [] as $node) {
+                            if ($node instanceof \DOMElement) {
+                                $value .= $node->textContent;
+                            }
+                        }
                     }
                     $cells[$column] = $value;
                 }
                 if ($cells) {
                     $maxColumn = max(array_keys($cells));
                     $values = [];
-                    for ($column = 1; $column <= $maxColumn; $column++) $values[] = '<td>'.e((string) ($cells[$column] ?? '')).'</td>';
+                    for ($column = 1; $column <= $maxColumn; $column++) {
+                        $values[] = '<td>'.e((string) ($cells[$column] ?? '')).'</td>';
+                    }
                     $rows[] = '<tr>'.implode('', $values).'</tr>';
                 }
             }
-            if ($rows) $sheets[] = '<section><h2>'.e(basename($sheetPath, '.xml')).'</h2><table><tbody>'.implode('', $rows).'</tbody></table></section>';
+            if ($rows) {
+                $sheets[] = '<section><h2>'.e(basename($sheetPath, '.xml')).'</h2><table><tbody>'.implode('', $rows).'</tbody></table></section>';
+            }
         }
         $zip->close();
 
@@ -283,7 +345,9 @@ class DocumentController extends Controller
     private function previewCsv(string $path): string
     {
         $handle = fopen($path, 'rb');
-        if (! $handle) return '<p class="empty">This CSV file could not be previewed.</p>';
+        if (! $handle) {
+            return '<p class="empty">This CSV file could not be previewed.</p>';
+        }
         $rows = [];
         while (($row = fgetcsv($handle)) !== false && count($rows) < 1000) {
             $cells = array_map(fn ($cell) => '<td>'.e((string) $cell).'</td>', $row);
@@ -296,16 +360,20 @@ class DocumentController extends Controller
 
     private function openOfficeArchive(string $path): ?\ZipArchive
     {
-        if (! class_exists(\ZipArchive::class)) return null;
-        $zip = new \ZipArchive();
+        if (! class_exists(\ZipArchive::class)) {
+            return null;
+        }
+        $zip = new \ZipArchive;
 
         return $zip->open($path) === true ? $zip : null;
     }
 
     private function loadOfficeXml(string|false|null $xml): ?\DOMDocument
     {
-        if (! $xml || strlen($xml) > 15_000_000) return null;
-        $document = new \DOMDocument();
+        if (! $xml || strlen($xml) > 15_000_000) {
+            return null;
+        }
+        $document = new \DOMDocument;
 
         return $document->loadXML($xml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING) ? $document : null;
     }
@@ -313,7 +381,9 @@ class DocumentController extends Controller
     private function columnNumber(string $letters): int
     {
         $number = 0;
-        foreach (str_split($letters) as $letter) $number = $number * 26 + ord($letter) - 64;
+        foreach (str_split($letters) as $letter) {
+            $number = $number * 26 + ord($letter) - 64;
+        }
 
         return $number;
     }

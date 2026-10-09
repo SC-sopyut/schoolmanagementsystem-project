@@ -52,7 +52,7 @@ class AuditController extends Controller
         $activity = $activityQuery->recent()->paginate(25, ['*'], 'activity_page')->withQueryString()
             ->through(fn (AuditLog $log) => [
                 'id' => $log->id, 'action' => $log->action,
-                'actor' => $log->actor?->name ?? 'System', 'actor_type' => class_basename($log->actor_type ?? 'System'),
+                'actor' => $log->actorName() ?? 'System', 'actor_type' => class_basename($log->actor_type ?? 'System'),
                 'organization_id' => $log->organization_id, 'subject_type' => class_basename($log->subject_type ?? ''),
                 'organization' => $log->organization?->name,
                 'subject_id' => $log->subject_id, 'metadata' => $log->metadata,

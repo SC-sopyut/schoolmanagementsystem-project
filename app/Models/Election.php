@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,25 +10,31 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Election extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    protected $fillable = ['organization_id', 'title', 'description', 'starts_at', 'ends_at', 'status'];
+    protected $fillable = ['organization_id', 'created_by', 'title', 'description', 'positions', 'starts_at', 'ends_at', 'status', 'results_published_at'];
 
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'positions' => 'array',
+        'results_published_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
     }
 
+    /** @return HasMany<Candidate, $this> */
     public function candidates(): HasMany
     {
         return $this->hasMany(Candidate::class);
     }
 
+    /** @return HasMany<Vote, $this> */
     public function votes(): HasMany
     {
         return $this->hasMany(Vote::class);

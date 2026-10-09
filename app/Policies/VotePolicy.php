@@ -35,7 +35,8 @@ class VotePolicy
             }
         }
 
-        $alreadyVoted = $election->votes()
+        $alreadyVoted = \App\Models\VoteRecord::query()
+            ->where('election_id', $election->id)
             ->where('user_id', $user->id)
             ->where('position', $position)
             ->exists();

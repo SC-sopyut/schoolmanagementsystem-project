@@ -2,14 +2,33 @@ import { useEffect, useRef, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { login, register } from '@/routes';
 import { AppearanceToggle } from '@/components/appearance-toggle';
+import { CalendarDays, Users } from 'lucide-react';
 
-const orgs = [
+type OrganizationCard = {
+    name: string;
+    tag: string;
+    color: string;
+    text: string;
+    logo: string;
+    about: string;
+    highlights: string[];
+    link: string | null;
+};
+
+const orgs: OrganizationCard[] = [
     {
         name: 'CRIM',
         tag: 'Criminology org',
         color: 'bg-[#C0392B]',
         text: 'text-white',
         logo: '/images/crim.png',
+        about: 'CRIM is a student organization for criminology students interested in criminal justice, public safety, and service. It connects classroom learning with practical conversations and campus activities.',
+        highlights: [
+            'Criminology learning sessions',
+            'Campus safety awareness',
+            'Community service activities',
+        ],
+        link: null,
     },
     {
         name: 'LOTES',
@@ -17,6 +36,13 @@ const orgs = [
         color: 'bg-[#2E5EAA]',
         text: 'text-white',
         logo: '/images/case.png',
+        about: 'LOTES brings language and communication students together to practice, share cultures, and build confidence. Its activities create opportunities to learn from one another beyond the classroom.',
+        highlights: [
+            'Language practice sessions',
+            'Cultural exchange activities',
+            'Communication workshops',
+        ],
+        link: null,
     },
     {
         name: 'BYTE',
@@ -24,6 +50,13 @@ const orgs = [
         color: 'bg-[#2E8B57]',
         text: 'text-white',
         logo: '/images/it.png',
+        about: 'BYTE is the student organization for IT and computing majors, building practical skills through programming, collaboration, and technology projects. It brings students together to explore new ideas and share what they learn.',
+        highlights: [
+            'HackTheCampus hackathon',
+            'Peer-led programming workshops',
+            'Tech talks and technology projects',
+        ],
+        link: null,
     },
     {
         name: 'COHME',
@@ -31,6 +64,13 @@ const orgs = [
         color: 'bg-[#E0A628]',
         text: 'text-white',
         logo: '/images/cohme.png',
+        about: 'COHME brings hospitality and management students together to develop service, leadership, and event-planning skills. Members learn by collaborating on activities and applying their studies in practical settings.',
+        highlights: [
+            'Hospitality skills workshops',
+            'Event planning and service',
+            'Career and industry discussions',
+        ],
+        link: null,
     },
     {
         name: 'Campus Ministry',
@@ -38,6 +78,13 @@ const orgs = [
         color: 'bg-[#D9DCE3]',
         text: 'text-[#101B33]',
         logo: '/images/awaken.png',
+        about: 'Campus Ministry offers students a place for faith, reflection, and community. Its activities support personal formation and encourage students to serve and care for one another.',
+        highlights: [
+            'Reflection and fellowship',
+            'Community service',
+            'Formation activities',
+        ],
+        link: null,
     },
     {
         name: 'SSC',
@@ -45,8 +92,20 @@ const orgs = [
         color: 'bg-[#C0392B]',
         text: 'text-white',
         logo: '/images/ssc.png',
+        about: 'The Student Supreme Council represents students and coordinates work across campus organizations. It supports student leadership, communication, and initiatives that improve campus life.',
+        highlights: [
+            'Student representation',
+            'Campus-wide events and initiatives',
+            'Coordination with student organizations',
+        ],
+        link: null,
     },
 ];
+
+type OrganizationStats = Record<
+    string,
+    { members: number; upcomingEvents: number }
+>;
 
 // const stats = [
 //     { num: '18', label: 'Active tasks this week' },
@@ -55,42 +114,69 @@ const orgs = [
 //     { num: '142', label: 'Members across all orgs' },
 // ];
 
-const features = [
+type FeatureCard = {
+    glyph: string;
+    title: string;
+    body: string;
+    detail: string;
+    image?: string;
+    imageAlt?: string;
+};
+
+const features: FeatureCard[] = [
     {
         glyph: '◧',
         title: 'Committee task boards',
         body: 'Kanban boards per committee, with deadlines and assignees everyone can see.',
         detail: 'Give each committee a shared board for organizing work. Officers can break plans into tasks, assign owners, set deadlines, and follow progress in one place.',
+        image: '/images/features/kanban.webp',
+        imageAlt:
+            'Kanban task board showing Backlog, To Do, and In Progress columns with assigned tasks.',
     },
     {
         glyph: '▤',
         title: 'Document repository',
         body: "Version history and folder permissions per committee, so drafts don't get lost.",
         detail: 'Keep committee files organized in shared folders. Version history helps members follow changes, while permissions keep documents available to the right people.',
+        image: '/images/features/docs.webp',
+        imageAlt:
+            'Document repository showing folders for each committee and a list of documents with version history.',
     },
     {
         glyph: '◔',
         title: 'Event planning',
         body: 'Budgets, checklists, and attendance tracking, from proposal to wrap-up.',
         detail: 'Plan an event from its initial proposal through completion. Keep the budget, preparation checklist, and attendance information together for the team.',
+        image: '/images/features/events.webp',
+        imageAlt:
+            'Event planning page showing budget, checklist, and attendance tracking for a campus event.',
     },
     {
         glyph: '◈',
         title: 'Voting & polling',
         body: 'Run internal decisions and elections with results members can trust.',
         detail: 'Create polls for organization decisions and elections, collect member votes, and share the outcome with the community.',
+        image: '/images/features/voting.webp',
+        imageAlt:
+            'Voting page showing a poll with multiple-choice options and a results summary.',
     },
     {
         glyph: '◫',
         title: 'Concerns routing',
         body: 'Members raise concerns; officers review before anything reaches the board.',
         detail: 'Provide members with a clear channel to raise concerns. Officers can review each submission and route it to the appropriate board for follow-up.',
+        image: '/images/features/concerns.webp',
+        imageAlt:
+            'Concerns page showing a list of submitted concerns with status and routing information.',
     },
     {
         glyph: '◱',
         title: 'Officer directory',
         body: 'Roles, terms, and contact info for every organization, always current.',
         detail: 'Help members find the right people by keeping officer roles, terms of service, and contact details together for each organization.',
+        image: '/images/features/members.webp',
+        imageAlt:
+            'Officer directory showing a list of officers with their roles, terms, and contact information.',
     },
 ];
 
@@ -189,9 +275,17 @@ function RevealWords({ text }: { text: string }) {
     );
 }
 
-export default function Welcome() {
-    const [selectedOrg, setSelectedOrg] = useState<(typeof orgs)[number] | null>(null);
-    const [selectedFeature, setSelectedFeature] = useState<(typeof features)[number] | null>(null);
+export default function Welcome({
+    orgStats = {},
+}: {
+    orgStats?: OrganizationStats;
+}) {
+    const [selectedOrg, setSelectedOrg] = useState<OrganizationCard | null>(
+        null,
+    );
+    const [selectedFeature, setSelectedFeature] = useState<FeatureCard | null>(
+        null,
+    );
     const heroHeadingRef = useWordReveal<HTMLHeadingElement>();
     const orgsHeadingRef = useWordReveal<HTMLHeadingElement>();
     const modulesHeadingRef = useWordReveal<HTMLHeadingElement>();
@@ -380,13 +474,22 @@ export default function Welcome() {
                                     aria-haspopup="dialog"
                                 >
                                     <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F8] p-3">
-                                        <img src={org.logo} alt="" className="max-h-full max-w-full object-contain" />
+                                        <img
+                                            src={org.logo}
+                                            alt=""
+                                            className="max-h-full max-w-full object-contain"
+                                        />
                                     </span>
                                     <span className="min-w-0">
-                                        <span className="block text-lg font-semibold text-[#101B33]">{org.name}</span>
-                                        <span className="mt-1 block text-sm text-[#5B6478]">{org.tag}</span>
+                                        <span className="block text-lg font-semibold text-[#101B33]">
+                                            {org.name}
+                                        </span>
+                                        <span className="mt-1 block text-sm text-[#5B6478]">
+                                            {org.tag}
+                                        </span>
                                         <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#1E56C5]">
-                                            View organization <span aria-hidden="true">→</span>
+                                            View organization{' '}
+                                            <span aria-hidden="true">→</span>
                                         </span>
                                     </span>
                                 </button>
@@ -395,7 +498,8 @@ export default function Welcome() {
                     </FadeIn>
 
                     <p className="mt-5 text-sm text-[#5B6478]">
-                        Choose an organization to see how its own workspace fits into the shared council.
+                        Choose an organization to see how its own workspace fits
+                        into the shared council.
                     </p>
                 </section>
 
@@ -403,7 +507,8 @@ export default function Welcome() {
                     <div
                         className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c351d]/35 p-4 backdrop-blur-sm"
                         onMouseDown={(event) => {
-                            if (event.target === event.currentTarget) setSelectedOrg(null);
+                            if (event.target === event.currentTarget)
+                                setSelectedOrg(null);
                         }}
                     >
                         <section
@@ -422,31 +527,89 @@ export default function Welcome() {
                             </button>
                             <div className="mb-6 flex items-center gap-4">
                                 <span className="flex h-20 w-20 items-center justify-center rounded-xl bg-[#F5F6F8] p-3">
-                                    <img src={selectedOrg.logo} alt="" className="max-h-full max-w-full object-contain" />
+                                    <img
+                                        src={selectedOrg.logo}
+                                        alt=""
+                                        className="max-h-full max-w-full object-contain"
+                                    />
                                 </span>
                                 <div>
-                                    <h3 id="org-dialog-title" className="text-2xl font-semibold text-[#101B33]">{selectedOrg.name}</h3>
-                                    <p className="mt-1 text-[#5B6478]">{selectedOrg.tag}</p>
+                                    <h3
+                                        id="org-dialog-title"
+                                        className="text-2xl font-semibold text-[#101B33]"
+                                    >
+                                        {selectedOrg.name}
+                                    </h3>
+                                    <p className="mt-1 text-[#5B6478]">
+                                        {selectedOrg.tag}
+                                    </p>
                                 </div>
                             </div>
                             <p className="leading-7 text-[#5B6478]">
-                                {selectedOrg.name} has its own space in CouncilForge, with a distinct identity and committee boards while staying connected to council-wide coordination.
+                                {selectedOrg.about}
                             </p>
                             <div className="mt-6 rounded-xl bg-[#F5F7FB] p-5">
-                                <h4 className="font-semibold text-[#101B33]">Inside this organization’s workspace</h4>
+                                <h4 className="font-semibold text-[#101B33]">
+                                    Highlights
+                                </h4>
                                 <ul className="mt-3 space-y-2 text-sm text-[#5B6478]">
-                                    <li>Committee task boards and shared documents</li>
-                                    <li>Organization events, concerns, and updates</li>
-                                    <li>Coordination with council-wide activities</li>
+                                    {selectedOrg.highlights.map((highlight) => (
+                                        <li
+                                            key={highlight}
+                                            className="flex gap-2"
+                                        >
+                                            <span
+                                                className="text-[#2E8B57]"
+                                                aria-hidden="true"
+                                            >
+                                                •
+                                            </span>
+                                            {highlight}
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => setSelectedOrg(null)}
-                                className="mt-7 w-full rounded-lg bg-[#1E56C5] px-5 py-3 font-semibold text-white hover:bg-[#1747A5]"
-                            >
-                                Back to organizations
-                            </button>
+                            <div className="mt-5 grid grid-cols-2 gap-3 rounded-xl border border-[#E1E4EA] p-4">
+                                <div className="flex items-center gap-2 text-sm text-[#5B6478]">
+                                    <Users className="h-4 w-4 text-[#2E8B57]" />
+                                    <span>
+                                        <strong className="text-[#101B33]">
+                                            {orgStats[selectedOrg.name]
+                                                ?.members ?? 0}
+                                        </strong>{' '}
+                                        members
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-[#5B6478]">
+                                    <CalendarDays className="h-4 w-4 text-[#2E8B57]" />
+                                    <span>
+                                        <strong className="text-[#101B33]">
+                                            {orgStats[selectedOrg.name]
+                                                ?.upcomingEvents ?? 0}
+                                        </strong>{' '}
+                                        upcoming events
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="mt-7 flex flex-wrap gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedOrg(null)}
+                                    className="flex-1 rounded-lg bg-[#1E56C5] px-5 py-3 font-semibold text-white hover:bg-[#1747A5]"
+                                >
+                                    Back to organizations
+                                </button>
+                                {selectedOrg.link && (
+                                    <a
+                                        href={selectedOrg.link}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex-1 rounded-lg border border-[#1E56C5] px-5 py-3 text-center font-semibold text-[#1E56C5] hover:bg-blue-50"
+                                    >
+                                        Visit page
+                                    </a>
+                                )}
+                            </div>
                         </section>
                     </div>
                 )}
@@ -485,9 +648,15 @@ export default function Welcome() {
                                         <span className="mb-3.5 flex h-8.5 w-8.5 items-center justify-center rounded-lg bg-[#EAF1FA] font-semibold text-[#1E56C5] transition-colors duration-300 group-hover:bg-[#1E56C5] group-hover:text-white">
                                             {f.glyph}
                                         </span>
-                                        <span className="block font-semibold">{f.title}</span>
-                                        <span className="mt-2 block text-sm text-[#5B6478]">{f.body}</span>
-                                        <span className="mt-4 block text-sm font-semibold text-[#1E56C5]">Learn more →</span>
+                                        <span className="block font-semibold">
+                                            {f.title}
+                                        </span>
+                                        <span className="mt-2 block text-sm text-[#5B6478]">
+                                            {f.body}
+                                        </span>
+                                        <span className="mt-4 block text-sm font-semibold text-[#1E56C5]">
+                                            Learn more →
+                                        </span>
                                     </button>
                                 </FadeIn>
                             ))}
@@ -499,7 +668,8 @@ export default function Welcome() {
                     <div
                         className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c351d]/35 p-4 backdrop-blur-sm"
                         onMouseDown={(event) => {
-                            if (event.target === event.currentTarget) setSelectedFeature(null);
+                            if (event.target === event.currentTarget)
+                                setSelectedFeature(null);
                         }}
                     >
                         <section
@@ -513,21 +683,46 @@ export default function Welcome() {
                                 onClick={() => setSelectedFeature(null)}
                                 aria-label="Close feature details"
                                 className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full text-2xl text-[#5B6478] hover:bg-[#F5F6F8]"
-                            >×</button>
+                            >
+                                ×
+                            </button>
                             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[#EAF1FA] text-xl font-semibold text-[#1E56C5]">
                                 {selectedFeature.glyph}
                             </div>
-                            <h3 id="feature-dialog-title" className="text-2xl font-semibold text-[#101B33]">{selectedFeature.title}</h3>
-                            <p className="mt-4 leading-7 text-[#5B6478]">{selectedFeature.detail}</p>
+                            <h3
+                                id="feature-dialog-title"
+                                className="text-2xl font-semibold text-[#101B33]"
+                            >
+                                {selectedFeature.title}
+                            </h3>
+                            <p className="mt-4 leading-7 text-[#5B6478]">
+                                {selectedFeature.detail}
+                            </p>
+                            {selectedFeature.image && (
+                                <img
+                                    src={selectedFeature.image}
+                                    alt={selectedFeature.imageAlt ?? ''}
+                                    loading="lazy"
+                                    width={1280}
+                                    height={720}
+                                    className="mt-5 aspect-video w-full rounded-xl border border-[#E1E4EA] object-cover object-top"
+                                />
+                            )}
                             <div className="mt-6 rounded-xl bg-[#F5F7FB] p-5">
-                                <h4 className="font-semibold text-[#101B33]">What it helps with</h4>
-                                <p className="mt-2 text-sm leading-6 text-[#5B6478]">{selectedFeature.body}</p>
+                                <h4 className="font-semibold text-[#101B33]">
+                                    What it helps with
+                                </h4>
+                                <p className="mt-2 text-sm leading-6 text-[#5B6478]">
+                                    {selectedFeature.body}
+                                </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setSelectedFeature(null)}
                                 className="mt-7 w-full rounded-lg bg-[#1E56C5] px-5 py-3 font-semibold text-white hover:bg-[#1747A5]"
-                            >Done</button>
+                            >
+                                Done
+                            </button>
                         </section>
                     </div>
                 )}
@@ -598,49 +793,115 @@ export default function Welcome() {
                                 Built for the ACC student community.
                             </h2>
                             <p className="mt-3 leading-7 text-[#5B6478]">
-                                CouncilForge supports student organizations within Abuyog Community College and complements the work of the Office of Student Affairs (OSA).
+                                CouncilForge supports student organizations
+                                within Abuyog Community College and complements
+                                the work of the Office of Student Affairs (OSA).
                             </p>
                         </div>
 
                         <div className="grid gap-5 lg:grid-cols-3">
                             <FadeIn className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6">
-                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">THE SCHOOL</span>
-                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">Abuyog Community College</h3>
+                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">
+                                    THE SCHOOL
+                                </span>
+                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">
+                                    Abuyog Community College
+                                </h3>
                                 <p className="mt-3 text-sm leading-6 text-[#5B6478]">
-                                    ACC’s mission is to develop capable, service-oriented graduates through inclusive and innovative programs. The college was founded in 1979 and is based in Abuyog, Leyte.
+                                    ACC’s mission is to develop capable,
+                                    service-oriented graduates through inclusive
+                                    and innovative programs. The college was
+                                    founded in 1979 and is based in Abuyog,
+                                    Leyte.
                                 </p>
-                                <a href="https://accabuyog.com/vision-mission-core-values.php" target="_blank" rel="noreferrer" className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline">
-                                    School vision &amp; mission <span aria-hidden="true" className="ml-1">↗</span>
+                                <a
+                                    href="https://accabuyog.com/vision-mission-core-values.php"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline"
+                                >
+                                    School vision &amp; mission{' '}
+                                    <span aria-hidden="true" className="ml-1">
+                                        ↗
+                                    </span>
                                 </a>
                             </FadeIn>
 
-                            <FadeIn delay={0.08} className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6">
-                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">STUDENT SUPPORT</span>
-                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">Office of Student Affairs</h3>
+                            <FadeIn
+                                delay={0.08}
+                                className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6"
+                            >
+                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">
+                                    STUDENT SUPPORT
+                                </span>
+                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">
+                                    Office of Student Affairs
+                                </h3>
                                 <p className="mt-3 text-sm leading-6 text-[#5B6478]">
-                                    OSA supports student welfare and development, guides student life and activities, and connects students with the college administration. Its work also includes student organizations and discipline.
+                                    OSA supports student welfare and
+                                    development, guides student life and
+                                    activities, and connects students with the
+                                    college administration. Its work also
+                                    includes student organizations and
+                                    discipline.
                                 </p>
-                                <a href="https://accabuyog.com/home/about-osa/" target="_blank" rel="noreferrer" className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline">
-                                    About OSA <span aria-hidden="true" className="ml-1">↗</span>
+                                <a
+                                    href="https://accabuyog.com/home/about-osa/"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline"
+                                >
+                                    About OSA{' '}
+                                    <span aria-hidden="true" className="ml-1">
+                                        ↗
+                                    </span>
                                 </a>
                             </FadeIn>
 
-                            <FadeIn delay={0.16} className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6">
-                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">POLICIES &amp; GUIDANCE</span>
-                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">Know the official policies</h3>
+                            <FadeIn
+                                delay={0.16}
+                                className="h-full rounded-2xl border border-[#E1E4EA] bg-white p-6"
+                            >
+                                <span className="text-xs font-semibold tracking-wide text-[#1E56C5]">
+                                    POLICIES &amp; GUIDANCE
+                                </span>
+                                <h3 className="mt-3 text-xl font-semibold text-[#101B33]">
+                                    Know the official policies
+                                </h3>
                                 <p className="mt-3 text-sm leading-6 text-[#5B6478]">
-                                    Refer to ACC’s Student Manual for the current rules and guidance for students. CouncilForge helps organizations coordinate their work; it does not replace college policies or OSA guidance.
+                                    Refer to ACC’s Student Manual for the
+                                    current rules and guidance for students.
+                                    CouncilForge helps organizations coordinate
+                                    their work; it does not replace college
+                                    policies or OSA guidance.
                                 </p>
-                                <a href="https://accabuyog.com/home/student-manual/" target="_blank" rel="noreferrer" className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline">
-                                    View the Student Manual <span aria-hidden="true" className="ml-1">↗</span>
+                                <a
+                                    href="https://accabuyog.com/home/student-manual/"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-5 inline-flex font-semibold text-[#1E56C5] hover:underline"
+                                >
+                                    View the Student Manual{' '}
+                                    <span aria-hidden="true" className="ml-1">
+                                        ↗
+                                    </span>
                                 </a>
                             </FadeIn>
                         </div>
 
                         <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#101B33] px-6 py-5 text-white">
-                            <p className="text-sm text-[#D8DED9]">For official announcements, services, and school information, visit ACC’s website.</p>
-                            <a href="https://accabuyog.com/home/" target="_blank" rel="noreferrer" className="rounded-lg border border-white/30 px-4 py-2 text-sm font-semibold hover:bg-white/10">
-                                Visit ACC website <span aria-hidden="true">↗</span>
+                            <p className="text-sm text-[#D8DED9]">
+                                For official announcements, services, and school
+                                information, visit ACC’s website.
+                            </p>
+                            <a
+                                href="https://accabuyog.com/home/"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-lg border border-white/30 px-4 py-2 text-sm font-semibold hover:bg-white/10"
+                            >
+                                Visit ACC website{' '}
+                                <span aria-hidden="true">↗</span>
                             </a>
                         </div>
                     </div>

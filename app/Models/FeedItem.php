@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FeedItem extends Model
 {
     public $timestamps = false;
+
     protected $fillable = ['organization_id', 'user_id', 'message', 'created_at'];
+
     protected $casts = ['created_at' => 'datetime'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

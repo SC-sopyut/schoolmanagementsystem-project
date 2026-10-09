@@ -12,6 +12,7 @@ class StoreConcernRequest extends FormRequest
         return true; // Organization membership is checked by ConcernPolicy in the controller.
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

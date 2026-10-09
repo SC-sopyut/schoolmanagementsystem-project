@@ -154,6 +154,15 @@ export default function Login({ status }: { status?: string }) {
                                 Create account
                             </Link>
                         </p>
+                        {/* <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+                            Administrator?{' '}
+                            <Link
+                                href="/admin/login"
+                                className="text-emerald-600 hover:underline"
+                            >
+                                Sign in here
+                            </Link>
+                        </p> */}
                     </form>
 
                     <div className="mt-5 flex items-center justify-center gap-2 border-t border-slate-200 pt-4 text-[11px] text-slate-400 dark:border-slate-700">

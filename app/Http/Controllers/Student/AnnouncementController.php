@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\AnnouncementRead;
+use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,7 +14,7 @@ class AnnouncementController extends Controller
 {
     public function index(): Response
     {
-        $user = request()->user();
+        $user = OfficerScope::user(request()->user());
 
         $announcements = Announcement::query()
             ->visibleTo($user)
@@ -39,7 +40,7 @@ class AnnouncementController extends Controller
      */
     public function markRead(Announcement $announcement): RedirectResponse
     {
-        $user = request()->user();
+        $user = OfficerScope::user(request()->user());
 
         abort_unless(Announcement::visibleTo($user)->whereKey($announcement->id)->exists(), 403);
 

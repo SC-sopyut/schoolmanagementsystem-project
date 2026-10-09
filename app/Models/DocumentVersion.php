@@ -8,9 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DocumentVersion extends Model
 {
     public $timestamps = false;
+
     protected $fillable = ['document_id', 'version', 'path', 'size', 'uploaded_by', 'created_at'];
+
     protected $casts = ['created_at' => 'datetime'];
 
-    public function document(): BelongsTo { return $this->belongsTo(Document::class); }
-    public function uploader(): BelongsTo { return $this->belongsTo(User::class, 'uploaded_by'); }
+    /** @return BelongsTo<Document, $this> */
+    public function document(): BelongsTo
+    {
+        return $this->belongsTo(Document::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
 }

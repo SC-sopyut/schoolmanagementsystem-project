@@ -8,6 +8,7 @@ use App\Models\Concern;
 use App\Models\Document;
 use App\Models\Event;
 use App\Models\EventAttendee;
+use App\Support\OfficerScope;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,7 +18,7 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $user = $request->user();
+        $user = OfficerScope::user($request->user());
         $orgIds = $user->organizations()->pluck('organizations.id');
 
         $events = Event::query()
@@ -46,7 +47,7 @@ class DashboardController extends Controller
                     'id' => $log->id,
                     'name' => $log->metadata['name'] ?? 'Deleted document',
                     'versions' => (int) ($log->metadata['versions'] ?? 1),
-                    'actor' => $log->actor?->name ?? 'Unknown user',
+                    'actor' => $log->actorName() ?? 'Unknown user',
                     'organization' => $log->organization?->name,
                     'deleted_at' => $log->created_at,
                 ]),

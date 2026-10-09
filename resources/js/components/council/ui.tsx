@@ -121,9 +121,11 @@ export function StatCard({
 export function Avatar({
     name,
     size = 28,
+    src,
 }: {
     name?: string | null;
     size?: number;
+    src?: string | null;
 }) {
     const initials = (name ?? '?')
         .split(' ')
@@ -134,9 +136,17 @@ export function Avatar({
     return (
         <span
             style={{ width: size, height: size, fontSize: size * 0.38 }}
-            className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#101B33] font-semibold text-white"
+            className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#101B33] font-semibold text-white"
         >
-            {initials}
+            {src ? (
+                <img
+                    src={src}
+                    alt={`${name ?? 'User'} profile photo`}
+                    className="h-full w-full rounded-full object-cover"
+                />
+            ) : (
+                initials
+            )}
         </span>
     );
 }

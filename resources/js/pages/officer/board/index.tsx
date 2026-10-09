@@ -16,7 +16,14 @@ import {
     store as storeTask,
 } from '@/routes/officer/tasks';
 import { router, useForm } from '@inertiajs/react';
-import { Clock, Plus } from 'lucide-react';
+import {
+    CheckCircle2,
+    Clock,
+    History,
+    Plus,
+    RotateCcw,
+    Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type Task = {
@@ -28,13 +35,30 @@ type Task = {
     committee: string | null;
     organization: string | null;
     assignee: { id: number; name: string } | null;
+    parent_task: { id: number; title: string } | null;
+    follow_up_count: number;
 };
 type Props = {
     columns: Record<string, Task[]>;
-    committees: { id: number; name: string; organization_id: number; organization: string | null }[];
+    committees: {
+        id: number;
+        name: string;
+        organization_id: number;
+        organization: string | null;
+    }[];
     assignees: { id: number; name: string; organization_id: number }[];
     can_manage_tasks: boolean;
     task_authority_scope: string;
+    follow_up_parents: { id: number; title: string }[];
+    can_create_follow_ups: boolean;
+    task_history: {
+        id: number;
+        action: 'completed' | 'deleted' | 'restored';
+        title: string;
+        actor: string;
+        date: string | null;
+        can_restore: boolean;
+    }[];
 };
 
 const COLS: [string, string][] = [
@@ -45,7 +69,16 @@ const COLS: [string, string][] = [
     ['done', 'Done'],
 ];
 
-export default function Board({ columns, committees, assignees, can_manage_tasks, task_authority_scope }: Props) {
+export default function Board({
+    columns,
+    committees,
+    assignees,
+    can_manage_tasks,
+    task_authority_scope,
+    follow_up_parents,
+    can_create_follow_ups,
+    task_history,
+}: Props) {
     const [cols, setCols] = useState(columns);
     const [priority, setPriority] = useState('all');
     const [assignee, setAssignee] = useState('all');
@@ -89,8 +122,25 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
     return (
         <CouncilLayout title="Kanban Board">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E1E4EA] bg-white p-4">
-                <div><h2 className="font-semibold">Officer tasking</h2><p className="mt-1 text-xs text-[#5B6478]">{can_manage_tasks ? `Assign work to organization members and officers within ${task_authority_scope}.` : 'You can update tasks assigned to you. Presidents and VPs Internal/External manage assignments.'}</p></div>
-                {can_manage_tasks && <button type="button" onClick={() => setOpen(true)} disabled={committees.length === 0} className={btnPrimary + ' disabled:opacity-50'}><Plus className="h-4 w-4"/>Assign task</button>}
+                <div>
+                    <h2 className="font-semibold">Officer tasking</h2>
+                    <p className="mt-1 text-xs text-[#5B6478]">
+                        {can_manage_tasks
+                            ? `Assign work to organization members and officers within ${task_authority_scope}.`
+                            : 'You can update tasks assigned to you. Presidents and VPs Internal/External manage assignments.'}
+                    </p>
+                </div>
+                {can_manage_tasks && (
+                    <button
+                        type="button"
+                        onClick={() => setOpen(true)}
+                        disabled={committees.length === 0}
+                        className={btnPrimary + ' disabled:opacity-50'}
+                    >
+                        <Plus className="h-4 w-4" />
+                        Assign task
+                    </button>
+                )}
             </div>
             <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="rounded-lg border border-[#E1E4EA] bg-white px-3 py-1.5 text-xs">
@@ -133,7 +183,7 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
                         >
                             <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
                                 {label}{' '}
-                                <span className="rounded-full bg-slate-200 px-2 text-[11px]">
+                                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#DCE5DF] px-1.5 text-[11px] leading-none font-bold text-[#173522]">
                                     {items.length}
                                 </span>
                             </div>
@@ -151,7 +201,9 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
                                                     tone={toneFor(t.committee)}
                                                     dot
                                                 >
-                                                    {t.organization ? `${t.organization} · ${t.committee}` : t.committee}
+                                                    {t.organization
+                                                        ? `${t.organization} · ${t.committee}`
+                                                        : t.committee}
                                                 </Pill>
                                             ) : (
                                                 <span />
@@ -167,6 +219,21 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
                                         <p className="mb-3 text-sm font-semibold">
                                             {t.title}
                                         </p>
+                                        {t.parent_task && (
+                                            <p className="mb-2 text-xs text-blue-700">
+                                                Follow-up to SSC task:{' '}
+                                                {t.parent_task.title}
+                                            </p>
+                                        )}
+                                        {t.follow_up_count > 0 && (
+                                            <p className="mb-2 text-xs text-blue-700">
+                                                {t.follow_up_count} linked
+                                                follow-up task
+                                                {t.follow_up_count === 1
+                                                    ? ''
+                                                    : 's'}
+                                            </p>
+                                        )}
                                         <div className="flex items-center justify-between text-xs text-[#5B6478]">
                                             <span className="flex items-center gap-1.5">
                                                 {t.assignee ? (
@@ -190,6 +257,30 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
                                                     : shortDate(t.due_date)}
                                             </span>
                                         </div>
+                                        {can_manage_tasks && (
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    if (
+                                                        window.confirm(
+                                                            `Delete “${t.title}”? This will be recorded in task history.`,
+                                                        )
+                                                    ) {
+                                                        router.delete(
+                                                            `/officer/tasks/${t.id}`,
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
+                                                        );
+                                                    }
+                                                }}
+                                                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                                Delete task
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -198,12 +289,68 @@ export default function Board({ columns, committees, assignees, can_manage_tasks
                 })}
             </div>
 
-            {can_manage_tasks && <NewTask
-                open={open}
-                onClose={() => setOpen(false)}
-                committees={committees}
-                assignees={assignees}
-            />}
+            <section className="mb-6 rounded-xl border border-[#E1E4EA] bg-white p-4">
+                <div className="mb-3 flex items-center gap-2">
+                    <History className="h-4 w-4 text-[#5B6478]" />
+                    <h2 className="text-sm font-semibold">Task history</h2>
+                </div>
+                {task_history.length === 0 ? (
+                    <p className="text-xs text-[#5B6478]">
+                        Completed and deleted tasks will appear here.
+                    </p>
+                ) : (
+                    <ul className="divide-y divide-[#E1E4EA]">
+                        {task_history.map((entry) => (
+                            <li
+                                key={entry.id}
+                                className="flex items-center gap-2 py-2 text-xs"
+                            >
+                                {entry.action === 'completed' ? (
+                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                                ) : entry.action === 'deleted' ? (
+                                    <Trash2 className="h-4 w-4 shrink-0 text-red-600" />
+                                ) : (
+                                    <RotateCcw className="h-4 w-4 shrink-0 text-blue-600" />
+                                )}
+                                <span className="min-w-0 flex-1">
+                                    <strong>{entry.title}</strong> was{' '}
+                                    {entry.action} by {entry.actor}
+                                </span>
+                                {entry.can_restore && can_manage_tasks && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            router.post(
+                                                `/officer/task-history/${entry.id}/restore`,
+                                                {},
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                        className="inline-flex shrink-0 items-center gap-1 rounded-md border border-emerald-500 bg-emerald-600 px-2.5 py-1.5 font-semibold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+                                    >
+                                        <RotateCcw className="h-3.5 w-3.5" />
+                                        Restore
+                                    </button>
+                                )}
+                                <span className="shrink-0 text-[#5B6478]">
+                                    {entry.date}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
+
+            {can_manage_tasks && (
+                <NewTask
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    committees={committees}
+                    assignees={assignees}
+                    followUpParents={follow_up_parents}
+                    canCreateFollowUps={can_create_follow_ups}
+                />
+            )}
         </CouncilLayout>
     );
 }
@@ -213,16 +360,22 @@ function NewTask({
     onClose,
     committees,
     assignees,
+    followUpParents,
+    canCreateFollowUps,
 }: { open: boolean; onClose: () => void } & Pick<
     Props,
     'committees' | 'assignees'
->) {
+> & {
+        followUpParents: Props['follow_up_parents'];
+        canCreateFollowUps: Props['can_create_follow_ups'];
+    }) {
     const form = useForm({
         committee_id: String(committees[0]?.id ?? ''),
         title: '',
         description: '',
         priority: 'medium',
         assigned_to: '',
+        parent_task_id: '',
         due_date: '',
     });
     const committee = committees.find(
@@ -238,22 +391,38 @@ function NewTask({
         // eslint-disable-next-line no-unused-vars
         form.transform(({ committee_id: _committee_id, ...rest }) => rest);
         form.post(storeTask(Number(form.data.committee_id)).url, {
-                preserveScroll: true,
-                onSuccess: () => {
-                    form.reset(
-                        'title',
-                        'description',
-                        'assigned_to',
-                        'due_date',
-                    );
-                    onClose();
-                },
-            });
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset('title', 'description', 'assigned_to', 'due_date');
+                onClose();
+            },
+        });
     }
 
     return (
-        <Modal open={open} onClose={onClose} title="Assign Task to Officer or Member">
+        <Modal open={open} onClose={onClose} title="Create Task">
             <form onSubmit={submit} className="space-y-3">
+                {canCreateFollowUps && followUpParents.length > 0 && (
+                    <Field
+                        label="Link to SSC task"
+                        error={form.errors.parent_task_id}
+                    >
+                        <select
+                            className={inputCls}
+                            value={form.data.parent_task_id}
+                            onChange={(e) =>
+                                form.setData('parent_task_id', e.target.value)
+                            }
+                        >
+                            <option value="">No linked SSC task</option>
+                            {followUpParents.map((parent) => (
+                                <option key={parent.id} value={parent.id}>
+                                    {parent.title}
+                                </option>
+                            ))}
+                        </select>
+                    </Field>
+                )}
                 <Field label="Committee" error={form.errors.committee_id}>
                     <select
                         className={inputCls}
@@ -265,7 +434,9 @@ function NewTask({
                     >
                         {committees.map((c) => (
                             <option key={c.id} value={c.id}>
-                                {c.organization ? `${c.organization} · ${c.name}` : c.name}
+                                {c.organization
+                                    ? `${c.organization} · ${c.name}`
+                                    : c.name}
                             </option>
                         ))}
                     </select>

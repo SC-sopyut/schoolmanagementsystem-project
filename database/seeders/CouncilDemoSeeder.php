@@ -46,12 +46,12 @@ class CouncilDemoSeeder extends Seeder
         $byteOfficer = Officer::firstOrCreate(['user_id' => $byte->id], ['organization_id' => $orgs['BYTE']->id, 'position' => 'President']);
         $committeeOfficer = Officer::firstOrCreate(['user_id' => $officer->id], ['organization_id' => $orgs['BYTE']->id, 'position' => 'Committee Head']);
 
-        // Memberships (officer is also a student; students can join several orgs)
+        // Each student belongs to one org; officers may have additional org affiliations.
         $ssc->organizations()->syncWithoutDetaching([$orgs['SSC']->id]);
         $byte->organizations()->syncWithoutDetaching([$orgs['BYTE']->id]);
         $officer->organizations()->syncWithoutDetaching([$orgs['BYTE']->id]);
-        foreach ($students as $i => $s) {
-            $s->organizations()->syncWithoutDetaching([$orgs['BYTE']->id, $orgs->values()[($i % 4) + 1]->id]);
+        foreach ($students as $s) {
+            $s->organizations()->sync([$orgs['BYTE']->id]);
         }
 
         // --- Committees + tasks --------------------------------------------
@@ -91,8 +91,12 @@ class CouncilDemoSeeder extends Seeder
                 'created_by' => ($org === 'SSC' ? $sscOfficer : $committeeOfficer)->id,
             ]);
             if ($e->wasRecentlyCreated) {
-                foreach ($budget as [$l, $est, $act]) { $e->budgetItems()->create(['label' => $l, 'estimated_cost' => $est, 'actual_cost' => $act]); }
-                foreach ($checks as $n => $done) { $e->checklistItems()->create(['label' => 'Prep item ' . ($n + 1), 'is_done' => $done]); }
+                foreach ($budget as [$l, $est, $act]) {
+                    $e->budgetItems()->create(['label' => $l, 'estimated_cost' => $est, 'actual_cost' => $act]);
+                }
+                foreach ($checks as $n => $done) {
+                    $e->checklistItems()->create(['label' => 'Prep item '.($n + 1), 'is_done' => $done]);
+                }
             }
         }
 

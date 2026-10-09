@@ -35,65 +35,76 @@ export default function StudentEvents({ events }: { events: Ev[] }) {
                 </Card>
             )}
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                {events.map((e) => {
-                    const org = e.organization?.name ?? 'School-wide';
-                    return (
-                        <Card key={e.id} className="p-4">
-                            <div className="mb-2 flex items-center justify-between">
-                                <Pill tone={toneFor(org)} dot>
-                                    {org}
-                                </Pill>
-                                <span className="flex items-center gap-1 text-xs text-[#5B6478]">
-                                    <Users className="h-3.5 w-3.5" />
-                                    {e.attendees_count}
-                                </span>
-                            </div>
-                            <p className="font-semibold">{e.title}</p>
-                            <p className="mb-3 text-xs text-[#5B6478]">
-                                {new Date(e.starts_at).toLocaleString(
-                                    undefined,
-                                    {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: 'numeric',
-                                        minute: '2-digit',
-                                    },
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {events.map((e) => {
+                        const org = e.organization?.name ?? 'School-wide';
+                        return (
+                            <Card key={e.id} className="p-4">
+                                <div className="mb-2 flex items-center justify-between">
+                                    <Pill tone={toneFor(org)} dot>
+                                        {org}
+                                    </Pill>
+                                    <span className="flex items-center gap-1 text-xs text-[#5B6478]">
+                                        <Users className="h-3.5 w-3.5" />
+                                        {e.attendees_count}
+                                    </span>
+                                </div>
+                                <p className="font-semibold">{e.title}</p>
+                                <p className="mb-3 text-xs text-[#5B6478]">
+                                    {new Date(e.starts_at).toLocaleString(
+                                        undefined,
+                                        {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                        },
+                                    )}
+                                    {e.location && (
+                                        <>
+                                            {' '}
+                                            ·{' '}
+                                            <MapPin className="inline h-3 w-3" />{' '}
+                                            {e.location}
+                                        </>
+                                    )}
+                                </p>
+                                {e.is_joined ? (
+                                    <button
+                                        disabled
+                                        className={btnGhost + ' w-full'}
+                                    >
+                                        You're going
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() =>
+                                            router.post(
+                                                join(e.id).url,
+                                                {},
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                        className={btnPrimary + ' w-full'}
+                                    >
+                                        Join event
+                                    </button>
                                 )}
-                                {e.location && (
-                                    <>
-                                        {' '}
-                                        · <MapPin className="inline h-3 w-3" />{' '}
-                                        {e.location}
-                                    </>
-                                )}
-                            </p>
-                            {e.is_joined ? (
-                                <button
-                                    disabled
-                                    className={btnGhost + ' w-full'}
-                                >
-                                    You're going
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() =>
-                                        router.post(
-                                            join(e.id).url,
-                                            {},
-                                            { preserveScroll: true },
-                                        )
-                                    }
-                                    className={btnPrimary + ' w-full'}
-                                >
-                                    Join event
-                                </button>
-                            )}
-                        </Card>
-                    );
-                })}
-            </div>
-            <div><EventCalendar events={events.map((event) => ({ id: event.id, title: event.title, starts_at: event.starts_at, organization: event.organization?.name ?? 'School-wide' }))}/></div>
+                            </Card>
+                        );
+                    })}
+                </div>
+                <div>
+                    <EventCalendar
+                        events={events.map((event) => ({
+                            id: event.id,
+                            title: event.title,
+                            starts_at: event.starts_at,
+                            organization:
+                                event.organization?.name ?? 'School-wide',
+                        }))}
+                    />
+                </div>
             </div>
         </CouncilLayout>
     );

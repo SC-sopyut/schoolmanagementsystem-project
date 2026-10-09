@@ -1,5 +1,7 @@
 import CouncilLayout from '@/layouts/council-layout';
-import DeletedUploads, { type DeletedUpload } from '@/components/council/deleted-uploads';
+import DeletedUploads, {
+    type DeletedUpload,
+} from '@/components/council/deleted-uploads';
 import {
     Card,
     Pill,

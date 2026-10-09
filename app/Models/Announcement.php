@@ -2,19 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Announcement extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     public const AUDIENCE_ORGANIZATION = 'organization';
+
     public const AUDIENCE_ALL_STUDENTS = 'all_students';
+
     public const AUDIENCE_ALL_OFFICERS = 'all_officers';
+
     public const AUDIENCE_EVERYONE = 'everyone';
 
     protected $fillable = ['organization_id', 'officer_id', 'title', 'body', 'audience', 'published_at'];
@@ -23,16 +28,19 @@ class Announcement extends Model
         'published_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
     }
 
+    /** @return BelongsTo<Officer, $this> */
     public function author(): BelongsTo
     {
         return $this->belongsTo(Officer::class, 'officer_id');
     }
 
+    /** @return HasMany<AnnouncementRead, $this> */
     public function reads(): HasMany
     {
         return $this->hasMany(AnnouncementRead::class);
@@ -44,6 +52,9 @@ class Announcement extends Model
         return $this->reads()->where('user_id', $user->id)->exists();
     }
 
+    /** @param Builder<Announcement> $query
+     * @return Builder<Announcement>
+     */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
         $organizationIds = $user->organizations()->pluck('organizations.id');

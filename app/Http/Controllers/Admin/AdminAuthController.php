@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
-use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
-use Laravel\Fortify\Fortify;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
+use Laravel\Fortify\Fortify;
 
 /**
  * Deliberately hand-rolled rather than routed through Fortify. Fortify is wired
@@ -37,7 +38,7 @@ class AdminAuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $throttleKey = 'admin-login:' . strtolower($credentials['email']) . '|' . $request->ip();
+        $throttleKey = 'admin-login:'.strtolower($credentials['email']).'|'.$request->ip();
 
         // Deliberately tighter than the student/officer throttle — this login
         // guards the identity-unmasking surface, so brute-force attempts are
@@ -85,14 +86,14 @@ class AdminAuthController extends Controller
         TwoFactorAuthenticationProvider $provider,
     ): RedirectResponse {
         $data = $request->validate(['code' => ['required', 'digits:6']]);
-        $adminId = $request->session()->get('admin_2fa_pending_id');
+        $adminId = (int) $request->session()->get('admin_2fa_pending_id');
         $throttleKey = 'admin-2fa:'.$adminId.'|'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             throw ValidationException::withMessages(['code' => 'Too many attempts. Try again in a minute.']);
         }
 
-        $admin = \App\Models\Admin::find($adminId);
+        $admin = Admin::query()->find($adminId);
 
         if (! $admin?->two_factor_secret || ! $provider->verify(Fortify::currentEncrypter()->decrypt($admin->two_factor_secret), $data['code'])) {
             RateLimiter::hit($throttleKey, 60);

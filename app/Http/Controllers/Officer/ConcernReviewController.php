@@ -7,6 +7,7 @@ use App\Http\Requests\Officer\ForwardConcernRequest;
 use App\Models\AuditLog;
 use App\Models\Concern;
 use App\Models\FeedItem;
+use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,7 +18,7 @@ class ConcernReviewController extends Controller
     /** Inbox. Every row goes through toOfficerArray() - anonymous identities never reach the page. */
     public function index(Request $request): Response
     {
-        $officer = $request->user()->officerProfile;
+        $officer = OfficerScope::profile($request->user());
 
         return Inertia::render('officer/concerns/index', [
             'concerns' => Concern::query()
@@ -31,7 +32,7 @@ class ConcernReviewController extends Controller
     {
         $this->authorize('review', $concern);
         abort_unless($concern->status === 'submitted', 422, 'Already reviewed.');
-        $officer = request()->user()->officerProfile;
+        $officer = OfficerScope::profile(request()->user());
 
         $concern->update(['status' => 'reviewed', 'reviewed_by' => $officer->id]);
         $concern->updatesTimeline()->create(['officer_id' => $officer->id, 'stage_label' => 'Officer Assigned']);
@@ -43,7 +44,7 @@ class ConcernReviewController extends Controller
     public function forward(ForwardConcernRequest $request, Concern $concern): RedirectResponse
     {
         $this->authorize('forward', $concern);
-        $officer = $request->user()->officerProfile;
+        $officer = OfficerScope::profile($request->user());
 
         $concern->update([
             'status' => 'forwarded',
@@ -69,7 +70,7 @@ class ConcernReviewController extends Controller
             'message' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $concern->updatesTimeline()->create($data + ['officer_id' => $request->user()->officerProfile->id]);
+        $concern->updatesTimeline()->create($data + ['officer_id' => OfficerScope::profile($request->user())->id]);
 
         return back();
     }
@@ -81,15 +82,16 @@ class ConcernReviewController extends Controller
 
         $concern->update(['status' => 'resolved', 'resolved_at' => now()]);
         $concern->updatesTimeline()->create([
-            'officer_id' => request()->user()->officerProfile->id,
+            'officer_id' => OfficerScope::profile(request()->user())->id,
             'stage_label' => 'Resolved',
         ]);
         $this->recordChange($concern, 'concern.resolved', ['from' => 'forwarded', 'to' => 'resolved']);
-        FeedItem::record(request()->user(), $concern->organization_id, "resolved concern {$concern->tracking_code}");
+        FeedItem::record(OfficerScope::user(request()->user()), $concern->organization_id, "resolved concern {$concern->tracking_code}");
 
         return back();
     }
 
+    /** @param array<string, string> $metadata */
     private function recordChange(Concern $concern, string $action, array $metadata): void
     {
         $user = request()->user();

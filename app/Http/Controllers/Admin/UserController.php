@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,11 +32,35 @@ class UserController extends Controller
             ->orderBy('name')->paginate(30)->withQueryString()->through(fn (User $user) => [
                 'id' => $user->id, 'name' => $user->name, 'email' => $user->email,
                 'type' => $user->officerProfile ? 'Officer' : 'Student',
-                'organization' => $user->officerProfile?->organization?->name ?? $user->organizations->pluck('name')->join(', '),
+                'organization' => collect([$user->officerProfile?->organization?->name])
+                    ->merge($user->organizations->pluck('name'))->filter()->unique()->join(', '),
                 'position' => $user->officerProfile?->position,
                 'joined_at' => $user->created_at,
             ]);
 
         return Inertia::render('admin/users/index', ['users' => $users, 'filters' => ['q' => $search]]);
+    }
+
+    public function resetPassword(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:12', 'confirmed'],
+        ]);
+
+        $user->update(['password' => $validated['password']]);
+
+        $admin = $request->user('admin');
+        abort_unless($admin instanceof Admin, 403);
+        AuditLog::create([
+            'actor_type' => $admin->getMorphClass(),
+            'actor_id' => $admin->id,
+            'action' => 'user.password_reset',
+            'subject_type' => User::class,
+            'subject_id' => $user->id,
+            'metadata' => ['email' => $user->email],
+            'ip_address' => $request->ip(),
+        ]);
+
+        return back()->with('success', 'Password updated. Share the new password with the user securely.');
     }
 }
