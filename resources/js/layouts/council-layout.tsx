@@ -35,7 +35,7 @@ import {
 
 type Shared = {
     auth: {
-        user: { name: string; email: string };
+        user: { name: string; email: string; avatar?: string | null };
         roles: { label: string; organization: string | null }[];
         officer: null | {
             label: string;
@@ -50,6 +50,7 @@ type Shared = {
         announcements: NotificationItem[];
         upcoming_events: NotificationItem[];
         concern_updates: NotificationItem[];
+        task_assignments: NotificationItem[];
     };
 };
 
@@ -73,7 +74,7 @@ type SearchResult = {
 
 /**
  * App shell for every Figma screen: navy sidebar (role-specific nav), header with search/bell/user,
- * and a profile card pinned to the sidebar bottom. Which nav renders is decided from `auth.officer`,
+ * and a Settings shortcut pinned to the sidebar bottom. Which nav renders is decided from `auth.officer`,
  * which the server computes from the `officers` table - the client never chooses its own role.
  * (Hiding a link is cosmetic; every route is still authorized server-side.)
  */
@@ -175,11 +176,11 @@ export default function CouncilLayout({
         : officer.is_president
           ? officer.label
           : officer.organization;
-    const subtitle = officer ? officer.label : 'Student';
     const notificationCount =
         notifications.announcements.length +
         notifications.upcoming_events.length +
-        notifications.concern_updates.length;
+        notifications.concern_updates.length +
+        notifications.task_assignments.length;
 
     return (
         <div
@@ -283,17 +284,20 @@ export default function CouncilLayout({
                         </SidebarGroup>
                     </SidebarContent>
                     <SidebarFooter>
-                        <div className="flex items-center gap-2 border-t border-white/10 px-2 pt-3">
-                            <Avatar name={auth.user.name} size={32} />
-                            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                                <p className="truncate text-xs font-semibold text-white">
-                                    {auth.user.name}
-                                </p>
-                                <p className="truncate text-[10px] text-slate-400">
-                                    {subtitle}
-                                </p>
-                            </div>
-                        </div>
+                        <SidebarMenu className="border-t border-white/10 pt-3">
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={url.split('?')[0] === '/settings/profile'}
+                                    tooltip={{ children: 'Settings' }}
+                                >
+                                    <Link href="/settings/profile">
+                                        <Settings />
+                                        <span>Settings</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
                     </SidebarFooter>
                 </Sidebar>
                 <SidebarInset className="min-w-0 overflow-x-clip bg-[#F5F6F8]">
@@ -450,6 +454,11 @@ export default function CouncilLayout({
                                     ) : (
                                         <div className="max-h-[min(32rem,75vh)] divide-y divide-[#E1E4EA] overflow-y-auto">
                                             <NotificationSection
+                                                title="Task updates"
+                                                items={notifications.task_assignments}
+                                                metadata={() => 'Tasking'}
+                                            />
+                                            <NotificationSection
                                                 title="Upcoming events"
                                                 items={
                                                     notifications.upcoming_events
@@ -508,6 +517,7 @@ export default function CouncilLayout({
                                         <Avatar
                                             name={auth.user.name}
                                             size={30}
+                                            src={auth.user.avatar}
                                         />
                                     </button>
                                 </DropdownMenuTrigger>

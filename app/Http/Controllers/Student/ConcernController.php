@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreConcernRequest;
 use App\Models\Concern;
+use App\Models\ConcernUpdate;
+use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +17,7 @@ class ConcernController extends Controller
     public function create(): Response
     {
         return Inertia::render('student/concerns/create', [
-            'organizations' => request()->user()->organizations()->get(['organizations.id', 'organizations.name']),
+            'organizations' => OfficerScope::user(request()->user())->organizations()->get(['organizations.id', 'organizations.name']),
         ]);
     }
 
@@ -23,7 +25,7 @@ class ConcernController extends Controller
     public function index(): Response
     {
         $concerns = Concern::query()
-            ->where('student_id', request()->user()->id)
+            ->where('student_id', OfficerScope::user(request()->user())->id)
             ->with(['organization:id,name', 'updatesTimeline.officer.user:id,name'])
             ->latest()->get()
             ->map(fn (Concern $c) => [
@@ -32,7 +34,7 @@ class ConcernController extends Controller
                 'status' => $c->status, 'is_anonymous' => $c->is_anonymous,
                 'organization' => $c->organization?->name, 'updated_at' => $c->updated_at,
                 'created_at' => $c->created_at,
-                'timeline' => $c->updatesTimeline->map(fn ($u) => [
+                'timeline' => $c->updatesTimeline->map(fn (ConcernUpdate $u) => [
                     'id' => $u->id, 'stage_label' => $u->stage_label, 'message' => $u->message,
                     'created_at' => $u->created_at,
                     'officer' => $u->officer ? [
@@ -50,7 +52,7 @@ class ConcernController extends Controller
         $this->authorize('create', [Concern::class, (int) $data['organization_id']]);
 
         $concern = Concern::create([
-            'student_id' => $request->user()->id, // always stored, even when anonymous
+            'student_id' => OfficerScope::user($request->user())->id, // always stored, even when anonymous
             'organization_id' => $data['organization_id'],
             'subject' => $data['subject'],
             'category' => $data['category'],

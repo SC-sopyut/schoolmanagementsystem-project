@@ -20,11 +20,13 @@ class ConcernUpdate extends Model
         static::creating(fn (ConcernUpdate $update) => $update->created_at ??= now());
     }
 
+    /** @return BelongsTo<Concern, $this> */
     public function concern(): BelongsTo
     {
         return $this->belongsTo(Concern::class);
     }
 
+    /** @return BelongsTo<Officer, $this> */
     public function officer(): BelongsTo
     {
         return $this->belongsTo(Officer::class);

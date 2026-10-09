@@ -11,6 +11,7 @@ class StoreBudgetItemRequest extends FormRequest
         return true; // EventPolicy::managePlanning checked in controller against the {event}
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

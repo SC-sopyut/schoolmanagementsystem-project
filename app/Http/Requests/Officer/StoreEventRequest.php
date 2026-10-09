@@ -11,6 +11,7 @@ class StoreEventRequest extends FormRequest
         return true; // EventPolicy::plan checked in controller
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

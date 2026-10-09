@@ -13,11 +13,13 @@ class DocumentVersion extends Model
 
     protected $casts = ['created_at' => 'datetime'];
 
+    /** @return BelongsTo<Document, $this> */
     public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');

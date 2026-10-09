@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreVoteRequest;
 use App\Models\Election;
-use App\Models\Vote;
+use App\Models\Ballot;
+use App\Models\VoteRecord;
+use App\Support\OfficerScope;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +24,7 @@ class ElectionController extends Controller
      */
     public function index(): Response
     {
-        $user = request()->user();
+        $user = OfficerScope::user(request()->user());
         $orgIds = $user->organizations()->pluck('organizations.id');
 
         $elections = Election::query()
@@ -31,12 +33,13 @@ class ElectionController extends Controller
             ->with(['organization:id,name', 'candidates.user:id,name'])
             ->latest('starts_at')
             ->get()
-            ->map(function (Election $election) use ($user) {
-                $election->voted_positions = $election->votes()
-                    ->where('user_id', $user->id)
-                    ->pluck('position');
-
-                return $election;
+            ->map(function (Election $election) use ($user): array {
+                return [
+                    ...$election->toArray(),
+                    'voted_positions' => VoteRecord::query()->where('election_id', $election->id)
+                        ->where('user_id', $user->id)
+                        ->pluck('position'),
+                ];
             });
 
         return Inertia::render('student/elections/index', [
@@ -49,12 +52,13 @@ class ElectionController extends Controller
         $this->authorizeViewable($election);
 
         $election->load(['organization:id,name', 'candidates.user:id,name']);
-        $election->voted_positions = $election->votes()
+        $electionData = $election->toArray();
+        $electionData['voted_positions'] = VoteRecord::query()->where('election_id', $election->id)
             ->where('user_id', request()->user()->id)
             ->pluck('position');
 
         return Inertia::render('student/elections/show', [
-            'election' => $election,
+            'election' => $electionData,
         ]);
     }
 
@@ -74,19 +78,22 @@ class ElectionController extends Controller
      */
     public function store(StoreVoteRequest $request, Election $election): RedirectResponse
     {
-        $user = $request->user();
+        $user = OfficerScope::user($request->user());
         $position = $request->string('position')->toString();
 
         $this->authorize('vote', [$election, $position]);
 
         try {
             DB::transaction(function () use ($request, $election, $user, $position) {
-                Vote::create([
+                VoteRecord::create([
                     'election_id' => $election->id,
-                    'candidate_id' => $request->integer('candidate_id'),
                     'user_id' => $user->id,
                     'position' => $position,
-                    'voted_at' => now(),
+                ]);
+                Ballot::create([
+                    'election_id' => $election->id,
+                    'candidate_id' => $request->integer('candidate_id'),
+                    'position' => $position,
                 ]);
             });
         } catch (QueryException $e) {
@@ -98,7 +105,7 @@ class ElectionController extends Controller
 
     private function authorizeViewable(Election $election): void
     {
-        $user = request()->user();
+        $user = OfficerScope::user(request()->user());
         $isMember = $election->isCouncilWide()
             || $user->organizations()->where('organizations.id', $election->organization_id)->exists();
 

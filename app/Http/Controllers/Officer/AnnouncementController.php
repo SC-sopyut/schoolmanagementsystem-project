@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Officer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
-use App\Models\Officer;
 use App\Models\Organization;
+use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,11 +16,12 @@ class AnnouncementController extends Controller
 {
     public function index(Request $request): Response
     {
-        $officer = $request->user()->officerProfile()->with('organization')->firstOrFail();
+        $officer = OfficerScope::profile($request->user());
+        $officer->loadMissing('organization');
         $organizationIds = $officer->visibleOrganizationIds();
 
         $announcements = Announcement::query()
-            ->where(fn ($query) => $query->visibleTo($request->user())->orWhere('officer_id', $officer->id))
+            ->where(fn ($query) => $query->visibleTo(OfficerScope::user($request->user()))->orWhere('officer_id', $officer->id))
             ->whereNotNull('published_at')
             ->with(['organization:id,name', 'author.user:id,name'])
             ->latest('published_at')
@@ -45,8 +46,8 @@ class AnnouncementController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        /** @var Officer $officer */
-        $officer = $request->user()->officerProfile()->with('organization')->firstOrFail();
+        $officer = OfficerScope::profile($request->user());
+        $officer->loadMissing('organization');
         $isCouncilOfficer = (bool) $officer->organization?->is_council;
         $allowedAudiences = $isCouncilOfficer
             ? [

@@ -13,6 +13,7 @@ class UpdateTaskStatusRequest extends FormRequest
         return true; // TaskPolicy::updateStatus checked in controller against the Task instance
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

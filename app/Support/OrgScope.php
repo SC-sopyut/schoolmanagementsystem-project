@@ -8,11 +8,12 @@ use Illuminate\Support\Collection;
 /**
  * One place that answers "which organizations can this user see?".
  *  - Officer       -> Officer::visibleOrganizationIds() (own org, or every org for the SSC/council officer)
- *  - Plain student -> the organizations they are a member of
- * An officer is also a student, so an officer's own memberships are merged in.
+ *  - Plain student -> their single organization membership
+ *  - Officer -> their primary organization and any additional admin-granted affiliations
  */
 class OrgScope
 {
+    /** @return Collection<int, int<0, max>> */
     public static function idsFor(User $user): Collection
     {
         $member = $user->organizations()->pluck('organizations.id');

@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Committee;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,8 +18,7 @@ class MembersController extends Controller
 {
     public function index(Request $request): Response
     {
-        $officer = $request->user()->officerProfile;
-        abort_unless($officer, 403);
+        $officer = OfficerScope::profile($request->user());
         $organizationIds = $officer->visibleOrganizationIds();
         $organizations = Organization::query()->whereIn('id', $organizationIds)->orderBy('name')->get(['id', 'name']);
 
@@ -37,7 +37,7 @@ class MembersController extends Controller
             ->get(['id', 'name', 'email', 'created_at']);
 
         $members = $users->map(function (User $user) use ($organizationIds): array {
-            $orgs = $user->organizations->map(fn ($organization) => [
+            $orgs = $user->organizations->map(fn (Organization $organization) => [
                 'id' => $organization->id,
                 'name' => $organization->name,
             ])->values();
@@ -67,7 +67,7 @@ class MembersController extends Controller
         $completeProfiles = $members->where('profile_complete', true)->count();
         $availableUsers = User::query()
             ->whereDoesntHave('officerProfile')
-            ->whereDoesntHave('organizations', fn ($query) => $query->whereIn('organizations.id', $organizationIds))
+            ->whereDoesntHave('organizations')
             ->orderBy('name')->get(['id', 'name', 'email']);
 
         return Inertia::render('officer/members/index', [
@@ -93,20 +93,25 @@ class MembersController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $officer = $request->user()->officerProfile;
-        abort_unless($officer, 403);
+        $actor = OfficerScope::user($request->user());
+        $officer = OfficerScope::profile($actor);
         $organizationIds = $officer->visibleOrganizationIds();
         $data = $request->validate([
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'organization_id' => ['required', 'integer', Rule::in($organizationIds->all())],
         ]);
 
-        $member = User::query()->whereDoesntHave('officerProfile')->findOrFail($data['user_id']);
+        $member = User::query()->whereDoesntHave('officerProfile')->findOrFail((int) $data['user_id']);
+        $alreadyInAnotherOrganization = $member->organizations()
+            ->where('organizations.id', '!=', $data['organization_id'])->exists();
+        if ($alreadyInAnotherOrganization) {
+            return back()->withErrors(['user_id' => 'Students can belong to one organization only.']);
+        }
         $member->organizations()->syncWithoutDetaching([$data['organization_id']]);
 
         AuditLog::create([
-            'actor_type' => $request->user()->getMorphClass(),
-            'actor_id' => $request->user()->id,
+            'actor_type' => $actor->getMorphClass(),
+            'actor_id' => $actor->id,
             'action' => 'membership.added_by_officer',
             'subject_type' => User::class,
             'subject_id' => $member->id,

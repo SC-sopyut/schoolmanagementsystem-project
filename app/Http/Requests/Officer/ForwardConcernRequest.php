@@ -11,6 +11,7 @@ class ForwardConcernRequest extends FormRequest
         return true; // ConcernPolicy::review / ::forward checked in controller
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

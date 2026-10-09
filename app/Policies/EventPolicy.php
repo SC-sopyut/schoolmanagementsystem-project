@@ -23,10 +23,10 @@ class EventPolicy
         }
 
         if ($organizationId === null) {
-            return (bool) ($officer->organization?->is_council ?? false);
+            return (bool) ($officer->organization->is_council ?? false);
         }
 
-        return $officer->visibleOrganizationIds()->contains($organizationId);
+        return $organizationId > 0 && $officer->visibleOrganizationIds()->contains($organizationId);
     }
 
     public function managePlanning(User $user, Event $event): bool

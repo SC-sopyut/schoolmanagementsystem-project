@@ -12,7 +12,11 @@ use App\Models\EventBudgetItem;
 use App\Models\FeedItem;
 use App\Models\Officer;
 use App\Models\Task;
+use App\Support\OfficerScope;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,12 +33,12 @@ class DashboardController extends Controller
 
     public function __invoke(Request $request): Response
     {
-        $officer = $request->user()->officerProfile;
+        $officer = OfficerScope::profile($request->user());
         $orgIds = $officer->visibleOrganizationIds();
 
         // Events for this officer's scope, plus school-wide (NULL org) events everyone can see.
         $events = Event::query()
-            ->where(fn ($q) => $q->whereIn('organization_id', $orgIds)->orWhereNull('organization_id'));
+            ->where(fn (Builder $q) => $q->whereIn('organization_id', $orgIds)->orWhereNull('organization_id'));
 
         $upcoming = (clone $events)->where('starts_at', '>=', now())
             ->whereIn('status', ['planned', 'ongoing'])->orderBy('starts_at');
@@ -75,7 +79,7 @@ class DashboardController extends Controller
             'upcoming_events' => (clone $upcoming)->with('organization:id,name')->limit(3)->get()
                 ->map(fn (Event $e) => [
                     'id' => $e->id, 'title' => $e->title, 'starts_at' => $e->starts_at,
-                    'location' => $e->location, 'organization' => $e->organization?->name ?? 'School-wide',
+                    'location' => $e->location, 'organization' => $e->organization->name ?? 'School-wide',
                 ]),
             'upcoming_events_count' => (clone $upcoming)->count(),
             'analytics' => [
@@ -93,7 +97,7 @@ class DashboardController extends Controller
                     'id' => $log->id,
                     'name' => $log->metadata['name'] ?? 'Deleted document',
                     'versions' => (int) ($log->metadata['versions'] ?? 1),
-                    'actor' => $log->actor?->name ?? 'Unknown user',
+                    'actor' => $log->actorName() ?? 'Unknown user',
                     'organization' => $log->organization?->name,
                     'deleted_at' => $log->created_at,
                 ]),
@@ -104,9 +108,13 @@ class DashboardController extends Controller
             : $this->officer($orgIds, $concerns, $common);
     }
 
-    private function officer($orgIds, $concerns, array $common): Response
+    /** @param Collection<int, int<0, max>> $orgIds
+     * @param  Builder<Concern>  $concerns
+     * @param  array<string, mixed>  $common
+     */
+    private function officer(Collection $orgIds, Builder $concerns, array $common): Response
     {
-        $tasks = Task::query()->whereHas('committee', fn ($q) => $q->whereIn('organization_id', $orgIds));
+        $tasks = Task::query()->whereHas('committee', fn (Builder $q) => $q->whereIn('organization_id', $orgIds));
         $week = now()->subWeek();
 
         return Inertia::render('officer/dashboard', $common + [
@@ -129,10 +137,14 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function president(Officer $officer, $orgIds, $concerns, array $common): Response
+    /** @param Collection<int, int<0, max>> $orgIds
+     * @param  Builder<Concern>  $concerns
+     * @param  array<string, mixed>  $common
+     */
+    private function president(Officer $officer, Collection $orgIds, Builder $concerns, array $common): Response
     {
         $budget = EventBudgetItem::query()
-            ->whereHas('event', fn ($q) => $q->whereIn('organization_id', $orgIds));
+            ->whereHas('event', fn (Builder $q) => $q->whereIn('organization_id', $orgIds));
         $allocated = (float) (clone $budget)->sum('estimated_cost');
         $spent = (float) (clone $budget)->sum('actual_cost');
 
@@ -157,13 +169,16 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function feed($orgIds)
+    /** @param Collection<int, int<0, max>> $orgIds
+     * @return Collection<int, array{id: int, actor: string, message: string, created_at: CarbonImmutable}>
+     */
+    private function feed(Collection $orgIds): Collection
     {
         return FeedItem::query()
-            ->where(fn ($q) => $q->whereIn('organization_id', $orgIds)->orWhereNull('organization_id'))
+            ->where(fn (Builder $q) => $q->whereIn('organization_id', $orgIds)->orWhereNull('organization_id'))
             ->with('user:id,name')->latest('created_at')->limit(4)->get()
             ->map(fn (FeedItem $f) => [
-                'id' => $f->id, 'actor' => $f->user?->name ?? 'System',
+                'id' => $f->id, 'actor' => $f->user->name ?? 'System',
                 'message' => $f->message, 'created_at' => $f->created_at,
             ]);
     }

@@ -1,7 +1,7 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { Card, Pill } from '@/components/council/ui';
-import { Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Link, router, useForm } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight, KeyRound, Search, X } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 type UserRow = {
@@ -94,6 +94,7 @@ export default function AdminUsers({ users, filters }: Props) {
                                 <th>Role</th>
                                 <th>Organization</th>
                                 <th className="pr-5">Joined</th>
+                                <th className="pr-5">Password</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#E1E4EA]">
@@ -122,12 +123,15 @@ export default function AdminUsers({ users, filters }: Props) {
                                             user.joined_at,
                                         ).toLocaleDateString()}
                                     </td>
+                                    <td className="pr-5">
+                                        <ResetPassword user={user} />
+                                    </td>
                                 </tr>
                             ))}
                             {users.data.length === 0 && (
                                 <tr>
                                     <td
-                                        colSpan={5}
+                                        colSpan={6}
                                         className="p-8 text-center text-[#5B6478]"
                                     >
                                         {filters.q
@@ -172,5 +176,72 @@ export default function AdminUsers({ users, filters }: Props) {
                 </nav>
             )}
         </AdminLayout>
+    );
+}
+
+function ResetPassword({ user }: { user: UserRow }) {
+    const [open, setOpen] = useState(false);
+    const form = useForm({ password: '', password_confirmation: '' });
+
+    function submit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        form.patch(`/admin/users/${user.id}/password`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset();
+                setOpen(false);
+            },
+        });
+    }
+
+    return (
+        <div className="min-w-52">
+            {!open ? (
+                <button
+                    type="button"
+                    onClick={() => setOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[#D5DAE3] px-2.5 py-1.5 text-xs font-medium hover:bg-slate-50"
+                >
+                    <KeyRound className="h-3.5 w-3.5" />
+                    Reset password
+                </button>
+            ) : (
+                <form onSubmit={submit} className="space-y-1.5">
+                    <input
+                        type="password"
+                        autoComplete="new-password"
+                        aria-label={`New password for ${user.name}`}
+                        placeholder="New password (12+ characters)"
+                        value={form.data.password}
+                        onChange={(event) => form.setData('password', event.target.value)}
+                        className="h-8 w-full rounded border border-[#D5DAE3] px-2 text-xs"
+                        required
+                        minLength={12}
+                    />
+                    <input
+                        type="password"
+                        autoComplete="new-password"
+                        aria-label={`Confirm password for ${user.name}`}
+                        placeholder="Confirm password"
+                        value={form.data.password_confirmation}
+                        onChange={(event) => form.setData('password_confirmation', event.target.value)}
+                        className="h-8 w-full rounded border border-[#D5DAE3] px-2 text-xs"
+                        required
+                        minLength={12}
+                    />
+                    {(form.errors.password || form.errors.password_confirmation) && (
+                        <p className="text-xs text-red-600">{form.errors.password ?? form.errors.password_confirmation}</p>
+                    )}
+                    <div className="flex gap-2">
+                        <button disabled={form.processing} className="rounded bg-[#176b35] px-2 py-1 text-xs font-semibold text-white disabled:opacity-60">
+                            Save password
+                        </button>
+                        <button type="button" onClick={() => { setOpen(false); form.reset(); }} className="px-2 py-1 text-xs text-[#5B6478]">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            )}
+        </div>
     );
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,32 +10,38 @@ use Illuminate\Support\Collection;
 
 class Officer extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $fillable = ['user_id', 'organization_id', 'position'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
     }
 
+    /** @return Collection<int, int<0, max>> */
     public function visibleOrganizationIds(): Collection
     {
         if ($this->hasCouncilWideTaskAuthority()) {
             return Organization::query()->pluck('id');
         }
 
-        return collect([$this->organization_id]);
+        return collect([$this->organization_id])
+            ->merge($this->user?->organizations()->pluck('organizations.id') ?? collect())
+            ->unique()->values();
     }
 
     public function isTaskManager(): bool
     {
-        $position = strtolower(preg_replace('/[^a-z0-9]+/', ' ', (string) $this->position) ?? '');
+        $position = preg_replace('/[^a-z0-9]+/', ' ', strtolower((string) $this->position)) ?? '';
         $isPresident = str_contains($position, 'president')
             && ! str_contains($position, 'vice')
             && ! str_contains($position, 'assistant')
@@ -52,6 +59,6 @@ class Officer extends Model
 
     public function dashboardLabel(): string
     {
-        return trim(($this->organization?->name ?? '').' '.($this->position ?? 'Officer'));
+        return trim(($this->organization->name ?? '').' '.($this->position ?? 'Officer'));
     }
 }

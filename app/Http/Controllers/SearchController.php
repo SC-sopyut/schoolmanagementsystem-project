@@ -7,6 +7,7 @@ use App\Models\Concern;
 use App\Models\Document;
 use App\Models\Event;
 use App\Models\Task;
+use App\Support\OfficerScope;
 use App\Support\OrgScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class SearchController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $query = Str::of($request->query('q', ''))->squish()->limit(100, '')->toString();
-        $user = $request->user();
+        $user = OfficerScope::user($request->user());
 
         if (mb_strlen($query) < 2) {
             return response()->json(['results' => []]);
@@ -38,7 +39,7 @@ class SearchController extends Controller
         foreach ($announcements as $announcement) {
             $results->push($this->result(
                 'Announcement', $announcement->title,
-                $announcement->organization?->name ?? $this->audienceLabel($announcement->audience),
+                $announcement->organization->name ?? $this->audienceLabel($announcement->audience),
                 $officer ? '/officer/announcements' : '/student/announcements'
             ));
         }
@@ -52,7 +53,7 @@ class SearchController extends Controller
         foreach ($events as $event) {
             $results->push($this->result(
                 'Event', $event->title,
-                $event->organization?->name ?? 'Council-wide event',
+                $event->organization->name ?? 'Council-wide event',
                 $officer ? '/officer/events' : '/student/events'
             ));
         }
@@ -67,7 +68,7 @@ class SearchController extends Controller
         foreach ($concerns as $concern) {
             $results->push($this->result(
                 'Concern', $concern->subject,
-                ($concern->organization?->name ?? 'Concern').' · '.$concern->tracking_code,
+                ($concern->organization->name ?? 'Concern').' · '.$concern->tracking_code,
                 $officer ? '/officer/concerns' : '/student/concerns'
             ));
         }
@@ -82,7 +83,7 @@ class SearchController extends Controller
 
             foreach ($documents as $document) {
                 $results->push($this->result(
-                    'Document', $document->name, $document->folder?->name ?? 'Document repository',
+                    'Document', $document->name, $document->folder->name ?? 'Document repository',
                     '/documents?'.http_build_query(['folder' => $document->folder_id, 'doc' => $document->id])
                 ));
             }
@@ -93,13 +94,14 @@ class SearchController extends Controller
                 ->with('committee:id,name')->latest()->limit(5)->get();
 
             foreach ($tasks as $task) {
-                $results->push($this->result('Task', $task->title, $task->committee?->name ?? 'Officer task board', '/officer/board'));
+                $results->push($this->result('Task', $task->title, $task->committee->name ?? 'Officer task board', '/officer/board'));
             }
         }
 
         return response()->json(['results' => $results->take(20)->values()]);
     }
 
+    /** @return array{type: string, title: string, subtitle: string, url: string} */
     private function result(string $type, string $title, string $subtitle, string $url): array
     {
         return compact('type', 'title', 'subtitle', 'url');

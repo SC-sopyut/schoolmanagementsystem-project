@@ -32,19 +32,8 @@ type Ev = {
     checklist_done: number;
     can_manage: boolean;
 };
-type Election = {
-    id: number;
-    title: string;
-    status: string;
-    organization: string;
-    starts_at: string;
-    ends_at: string;
-    candidates_count: number;
-    votes_count: number;
-};
 type Props = {
     events: Ev[];
-    elections: Election[];
     plannable_organizations: { id: number; name: string }[];
     can_plan_school_wide: boolean;
 };
@@ -72,15 +61,11 @@ const GRADIENT: Record<Tone, string> = {
 
 export default function Events({
     events,
-    elections,
     plannable_organizations,
     can_plan_school_wide,
 }: Props) {
     const params = new URLSearchParams(
         typeof window !== 'undefined' ? window.location.search : '',
-    );
-    const [tab, setTab] = useState<'events' | 'voting'>(
-        params.get('tab') === 'voting' ? 'voting' : 'events',
     );
     const [open, setOpen] = useState(params.get('new') === '1');
     const canCreate =
@@ -90,19 +75,8 @@ export default function Events({
         .slice(0, 3);
 
     return (
-        <CouncilLayout title="Events & Voting">
-            <div className="mb-5 flex items-center justify-between border-b border-[#E1E4EA]">
-                <div className="flex gap-1">
-                    {(['events', 'voting'] as const).map((t) => (
-                        <button
-                            key={t}
-                            onClick={() => setTab(t)}
-                            className={`rounded-t-lg px-4 py-2 text-sm font-medium capitalize ${tab === t ? 'border-b-2 border-blue-600 text-blue-600' : 'text-[#5B6478]'}`}
-                        >
-                            {t}
-                        </button>
-                    ))}
-                </div>
+        <CouncilLayout title="Events">
+            <div className="mb-5 flex items-center justify-end border-b border-[#E1E4EA]">
                 {canCreate && (
                     <button
                         onClick={() => setOpen(true)}
@@ -114,7 +88,6 @@ export default function Events({
                 )}
             </div>
 
-            {tab === 'events' ? (
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
                     <div className="xl:col-span-2">
                         <h2 className="text-lg font-bold">Upcoming Events</h2>
@@ -253,51 +226,6 @@ export default function Events({
                         </Card>
                     </div>
                 </div>
-            ) : (
-                <div>
-                    {/* Voting tab is NOT in the Figma - a read-only overview built from the existing election data. */}
-                    <h2 className="text-lg font-bold">Elections</h2>
-                    <p className="mb-4 text-sm text-[#5B6478]">
-                        Council-wide and organization elections in your scope.
-                    </p>
-                    {elections.length === 0 && (
-                        <Card className="p-8 text-center text-sm text-[#5B6478]">
-                            No elections yet.
-                        </Card>
-                    )}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {elections.map((el) => (
-                            <Card key={el.id} className="p-4">
-                                <div className="mb-2 flex justify-between">
-                                    <Pill tone={toneFor(el.organization)} dot>
-                                        {el.organization}
-                                    </Pill>
-                                    <Pill
-                                        tone={
-                                            el.status === 'open'
-                                                ? 'green'
-                                                : el.status === 'closed'
-                                                  ? 'gray'
-                                                  : 'yellow'
-                                        }
-                                    >
-                                        {el.status}
-                                    </Pill>
-                                </div>
-                                <p className="font-semibold">{el.title}</p>
-                                <p className="mb-3 text-xs text-[#5B6478]">
-                                    {shortDate(el.starts_at)} –{' '}
-                                    {shortDate(el.ends_at)}
-                                </p>
-                                <p className="text-xs text-[#5B6478]">
-                                    {el.candidates_count} candidates ·{' '}
-                                    <b>{el.votes_count}</b> votes cast
-                                </p>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            )}
 
             <CreateEvent
                 open={open}

@@ -86,14 +86,14 @@ class AdminAuthController extends Controller
         TwoFactorAuthenticationProvider $provider,
     ): RedirectResponse {
         $data = $request->validate(['code' => ['required', 'digits:6']]);
-        $adminId = $request->session()->get('admin_2fa_pending_id');
+        $adminId = (int) $request->session()->get('admin_2fa_pending_id');
         $throttleKey = 'admin-2fa:'.$adminId.'|'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             throw ValidationException::withMessages(['code' => 'Too many attempts. Try again in a minute.']);
         }
 
-        $admin = Admin::find($adminId);
+        $admin = Admin::query()->find($adminId);
 
         if (! $admin?->two_factor_secret || ! $provider->verify(Fortify::currentEncrypter()->decrypt($admin->two_factor_secret), $data['code'])) {
             RateLimiter::hit($throttleKey, 60);
