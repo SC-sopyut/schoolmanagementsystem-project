@@ -14,10 +14,11 @@ class EventAttendee extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['event_id', 'user_id', 'joined_at'];
+    protected $fillable = ['event_id', 'user_id', 'joined_at', 'checked_in_at', 'checked_in_by'];
 
     protected $casts = [
         'joined_at' => 'datetime',
+        'checked_in_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Event, $this> */
@@ -30,5 +31,11 @@ class EventAttendee extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function checkedInBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_in_by');
     }
 }

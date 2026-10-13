@@ -74,11 +74,6 @@ class OrganizationMembershipController extends Controller
             abort_unless($account->officerProfile()->exists(), 422, 'Choose an officer account.');
         } else {
             abort_if($account->officerProfile()->exists(), 422, 'Officer accounts must be added as officers.');
-            $alreadyInAnotherOrganization = $account->organizations()
-                ->where('organizations.id', '!=', $validated['organization_id'])->exists();
-            if ($alreadyInAnotherOrganization) {
-                return back()->withErrors(['user_id' => 'Students can belong to one organization only. Remove the existing membership first.']);
-            }
         }
 
         $alreadyMember = $account->organizations()

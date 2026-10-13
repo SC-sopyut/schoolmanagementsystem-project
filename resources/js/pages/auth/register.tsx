@@ -11,9 +11,10 @@ import { store } from '@/routes/register';
 
 type Props = {
     passwordRules: string;
+    courses: string[];
 };
 
-export default function Register({ passwordRules }: Props) {
+export default function Register({ passwordRules, courses }: Props) {
     return (
         <>
             <Head title="Register" />
@@ -27,7 +28,7 @@ export default function Register({ passwordRules }: Props) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 to-slate-900/60" />
 
-                <div className="relative z-10 mx-4 my-8 w-full max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/90">
+                <div className="relative z-10 mx-4 my-8 w-full max-w-2xl rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/90">
                     <div className="mb-3 flex justify-center">
                         <img
                             src="/images/councilforge-logo.png"
@@ -40,7 +41,7 @@ export default function Register({ passwordRules }: Props) {
                         CREATE YOUR ACCOUNT
                     </h1>
                     <p className="mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                        Student Council Management Platform
+                        Submit your school details for account verification.
                     </p>
 
                     <Form
@@ -52,26 +53,51 @@ export default function Register({ passwordRules }: Props) {
                         {({ processing, errors }) => (
                             <>
                                 <div>
-                                    <Label
-                                        htmlFor="name"
-                                        className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
-                                    >
-                                        Full name
-                                    </Label>
-                                    <Input
-                                        id="name"
-                                        type="text"
-                                        required
-                                        autoFocus
-                                        autoComplete="name"
-                                        name="name"
-                                        placeholder="Your full name"
-                                        className="h-10 rounded-lg px-3 text-sm"
-                                    />
-                                    <InputError
-                                        message={errors.name}
-                                        className="mt-1 text-xs"
-                                    />
+                                    <Label htmlFor="student_id_no" className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">School ID no.</Label>
+                                    <Input id="student_id_no" type="text" required autoFocus name="student_id_no" placeholder="2024-01-00001" pattern="[0-9]{4}-[0-9]{2}-[0-9]{5}" className="h-10 rounded-lg px-3 text-sm" />
+                                    <InputError message={errors.student_id_no} className="mt-1 text-xs" />
+                                </div>
+
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <Label htmlFor="first_name" className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">First name</Label>
+                                        <Input id="first_name" type="text" required autoComplete="given-name" name="first_name" className="h-10 rounded-lg px-3 text-sm" />
+                                        <InputError message={errors.first_name} className="mt-1 text-xs" />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="middle_name" className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">Middle name <span className="normal-case">(optional)</span></Label>
+                                        <Input id="middle_name" type="text" autoComplete="additional-name" name="middle_name" className="h-10 rounded-lg px-3 text-sm" />
+                                        <InputError message={errors.middle_name} className="mt-1 text-xs" />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="last_name" className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">Last name</Label>
+                                        <Input id="last_name" type="text" required autoComplete="family-name" name="last_name" className="h-10 rounded-lg px-3 text-sm" />
+                                        <InputError message={errors.last_name} className="mt-1 text-xs" />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="suffix" className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">Suffix <span className="normal-case">(optional)</span></Label>
+                                        <Input id="suffix" type="text" name="suffix" placeholder="Jr., III" className="h-10 rounded-lg px-3 text-sm" />
+                                        <InputError message={errors.suffix} className="mt-1 text-xs" />
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <Label htmlFor="course" className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">Course</Label>
+                                        <select id="course" name="course" required defaultValue="" className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                                            <option value="" disabled>Select your course</option>
+                                            {courses.map((course) => <option key={course} value={course}>{course}</option>)}
+                                        </select>
+                                        <InputError message={errors.course} className="mt-1 text-xs" />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="year_level" className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">Year level</Label>
+                                        <select id="year_level" name="year_level" required defaultValue="" className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                                            <option value="" disabled>Select year level</option>
+                                            {[1, 2, 3, 4].map((year) => <option key={year} value={year}>{year}{year === 1 ? 'st' : year === 2 ? 'nd' : year === 3 ? 'rd' : 'th'} year</option>)}
+                                        </select>
+                                        <InputError message={errors.year_level} className="mt-1 text-xs" />
+                                    </div>
                                 </div>
 
                                 <div>
@@ -145,8 +171,10 @@ export default function Register({ passwordRules }: Props) {
                                     data-test="register-user-button"
                                 >
                                     {processing && <Spinner />}
-                                    Create account
+                                    Create account for review
                                 </Button>
+
+                                <p className="-mt-2 text-center text-xs text-slate-500">You can sign in while your registration is pending, but event joins, voting, and concerns are enabled only after approval.</p>
 
                                 <p className="text-center text-xs text-slate-500 dark:text-slate-400">
                                     Already have an account?{' '}

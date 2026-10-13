@@ -40,6 +40,8 @@ type Props = {
     executives: Member[];
     organizations: Organization[];
     available_users: { id: number; name: string; email: string }[];
+    membership_requests: { id: number; name: string; email: string; requested_at: string }[];
+    can_review_membership_requests: boolean;
     analytics: {
         member_count: number;
         officer_count: number;
@@ -60,6 +62,8 @@ export default function Members({
     executives,
     organizations,
     available_users,
+    membership_requests,
+    can_review_membership_requests,
     analytics,
 }: Props) {
     const [search, setSearch] = useState('');
@@ -155,6 +159,13 @@ export default function Members({
         });
     }
 
+    function reviewMembershipRequest(id: number, decision: 'approve' | 'reject') {
+        const action = decision === 'approve' ? 'Approve' : 'Decline';
+        if (window.confirm(`${action} this membership request?`)) {
+            form.post(`/officer/membership-requests/${id}/${decision}`, { preserveScroll: true });
+        }
+    }
+
     return (
         <CouncilLayout title="Members">
             <div className="members-dashboard mx-auto max-w-7xl space-y-5 pb-8">
@@ -222,6 +233,11 @@ export default function Members({
                         tone="gold"
                     />
                 </section>
+
+                {can_review_membership_requests && <section className="rounded-xl border border-[#d6e6d1] bg-white p-5 shadow-sm">
+                    <div className="mb-4"><h2 className="font-bold text-[#12351f]">Membership requests</h2><p className="mt-1 text-sm text-[#64806a]">Students requesting to join your organization.</p></div>
+                    {membership_requests.length ? <div className="space-y-3">{membership_requests.map((request) => <div key={request.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#e1e4ea] p-3"><div><p className="font-semibold">{request.name}</p><p className="text-sm text-[#64806a]">{request.email} · Requested {new Date(request.requested_at).toLocaleDateString()}</p></div><div className="flex gap-2"><button type="button" onClick={() => reviewMembershipRequest(request.id, 'approve')} className={btnPrimary}>Approve</button><button type="button" onClick={() => reviewMembershipRequest(request.id, 'reject')} className={btnGhost}>Decline</button></div></div>)}</div> : <p className="text-sm text-[#64806a]">No membership requests are waiting for review.</p>}
+                </section>}
 
                 <section>
                     <div className="mb-3 flex items-center justify-between gap-3">

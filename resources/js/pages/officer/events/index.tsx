@@ -14,7 +14,7 @@ import {
     type Tone,
 } from '@/components/council/ui';
 import { store as storeEvent } from '@/routes/officer/events';
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, MapPin, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
 
@@ -127,6 +127,14 @@ export default function Events({
                                         <p className="font-semibold">
                                             {e.title}
                                         </p>
+                                        {e.can_manage && (
+                                            <Link
+                                                href={`/officer/events/${e.id}/attendance`}
+                                                className="mt-3 inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                                            >
+                                                Open attendance
+                                            </Link>
+                                        )}
                                         <p className="mb-3 flex flex-wrap items-center gap-x-3 text-xs text-[#5B6478]">
                                             <span>
                                                 {new Date(

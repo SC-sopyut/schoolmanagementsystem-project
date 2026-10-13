@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -36,6 +37,13 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $user): void {
+            $user->checkin_code ??= Str::random(40);
+        });
+    }
+
     /** @var list<string> */
     protected $appends = ['avatar'];
 
@@ -49,6 +57,18 @@ class User extends Authenticatable
     public function officerProfile(): HasOne
     {
         return $this->hasOne(Officer::class);
+    }
+
+    /** @return HasOne<StudentProfile, $this> */
+    public function studentProfile(): HasOne
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
+    /** @return HasMany<OrganizationJoinRequest, $this> */
+    public function organizationJoinRequests(): HasMany
+    {
+        return $this->hasMany(OrganizationJoinRequest::class);
     }
 
     /** @return HasMany<Task, $this> */

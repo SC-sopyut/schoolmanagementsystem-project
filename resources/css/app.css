@@ -288,6 +288,13 @@
     --tw-ring-color: #2e8b48;
 }
 
+/* Native select menus are rendered by the browser on a light surface. Keep
+   their options readable when the application itself is in dark mode. */
+.dark select option {
+    background-color: #ffffff;
+    color: #173a21;
+}
+
 /* Keep the budget dashboard legible when its fixed green palette is viewed in dark mode. */
 .dark .budget-dashboard [class*='text-[#'] {
     color: #ffffff !important;
