@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureUserIsOfficer;
+use App\Http\Middleware\EnsureStudentApproved;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'is_admin' => EnsureAdmin::class,
             'is_officer' => EnsureUserIsOfficer::class,
+            'student_approved' => EnsureStudentApproved::class,
         ]);
 
         $middleware->web(append: [

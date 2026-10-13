@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { edit } from '@/routes/profile';
 import type { Auth } from '@/types';
 import { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
     BadgeCheck,
     Building2,
@@ -24,10 +25,11 @@ import {
 
 type PageProps = {
     auth: Auth;
+    checkinCode: string;
 };
 
 export default function Profile() {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, checkinCode } = usePage<PageProps>().props;
     const photoForm = useForm<{ avatar: File | null }>({ avatar: null });
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const roles = auth.roles ?? [];
@@ -169,6 +171,23 @@ export default function Profile() {
                                 </strong>
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Your event check-in QR code</CardTitle>
+                        <p className="text-muted-foreground text-sm">
+                            Show this code to an officer at an event. It contains a private CouncilForge check-in code, not your account ID.
+                        </p>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
+                        <div className="rounded-xl bg-white p-4">
+                            <QRCodeSVG value={checkinCode} size={168} level="M" includeMargin />
+                        </div>
+                        <p className="text-muted-foreground max-w-md text-sm">
+                            The officer will confirm your name before recording attendance. Keep this code private and do not share screenshots of it.
+                        </p>
                     </CardContent>
                 </Card>
 

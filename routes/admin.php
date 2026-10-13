@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\ConcernController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrganizationMembershipController;
+use App\Http\Controllers\Admin\StudentMasterlistController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,13 @@ Route::middleware(['auth:admin', 'is_admin'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('memberships', [OrganizationMembershipController::class, 'index'])->name('memberships.index');
     Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::get('student-masterlist', [StudentMasterlistController::class, 'index'])->name('student-masterlist.index');
+    Route::post('student-masterlist', [StudentMasterlistController::class, 'store'])->name('student-masterlist.store');
+    Route::delete('student-masterlist/{studentMasterlist}', [StudentMasterlistController::class, 'destroy'])->name('student-masterlist.destroy');
+    Route::get('pending-registrations', [UserController::class, 'pending'])->name('pending-registrations.index');
+    Route::post('pending-registrations/approve-all', [UserController::class, 'approveAll'])->name('pending-registrations.approve-all');
+    Route::post('pending-registrations/{user}/approve', [UserController::class, 'approve'])->name('pending-registrations.approve');
+    Route::delete('pending-registrations/{user}', [UserController::class, 'reject'])->name('pending-registrations.reject');
     Route::patch('users/{user}/password', [UserController::class, 'resetPassword'])->name('users.password');
     Route::post('memberships', [OrganizationMembershipController::class, 'store'])->name('memberships.store');
     Route::delete('memberships/{user}/{organization}', [OrganizationMembershipController::class, 'destroy'])->name('memberships.destroy');

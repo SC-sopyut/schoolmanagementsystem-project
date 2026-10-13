@@ -39,17 +39,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('elections', [Student\ElectionController::class, 'index'])->name('elections.index');
         Route::get('elections/{election}', [Student\ElectionController::class, 'show'])->name('elections.show');
-        Route::post('elections/{election}/vote', [Student\ElectionController::class, 'store'])->name('elections.vote');
+        Route::post('elections/{election}/vote', [Student\ElectionController::class, 'store'])->middleware('student_approved')->name('elections.vote');
 
         Route::get('announcements', [Student\AnnouncementController::class, 'index'])->name('announcements.index');
         Route::post('announcements/{announcement}/read', [Student\AnnouncementController::class, 'markRead'])->name('announcements.read');
 
         Route::get('concerns', [Student\ConcernController::class, 'index'])->name('concerns.index');
         Route::get('concerns/create', [Student\ConcernController::class, 'create'])->name('concerns.create');
-        Route::post('concerns', [Student\ConcernController::class, 'store'])->name('concerns.store');
+        Route::post('concerns', [Student\ConcernController::class, 'store'])->middleware('student_approved')->name('concerns.store');
 
         Route::get('events', [Student\EventController::class, 'index'])->name('events.index');
-        Route::post('events/{event}/join', [Student\EventController::class, 'join'])->name('events.join');
+        Route::post('events/{event}/join', [Student\EventController::class, 'join'])->middleware('student_approved')->name('events.join');
+        Route::get('organizations', [Student\OrganizationMembershipController::class, 'index'])->name('organizations.index');
+        Route::post('organizations/requests', [Student\OrganizationMembershipController::class, 'store'])->middleware('student_approved')->name('organizations.requests.store');
     });
 
     // ---------------- Officers (requires an `officers` row) ----------------
@@ -59,6 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('budget', [BudgetController::class, 'store'])->name('budget.store');
         Route::get('members', [MembersController::class, 'index'])->name('members.index');
         Route::post('members', [MembersController::class, 'store'])->name('members.store');
+        Route::post('membership-requests/{joinRequest}/approve', [Officer\OrganizationJoinRequestController::class, 'approve'])->name('membership-requests.approve');
+        Route::post('membership-requests/{joinRequest}/reject', [Officer\OrganizationJoinRequestController::class, 'reject'])->name('membership-requests.reject');
         Route::get('announcements', [Officer\AnnouncementController::class, 'index'])->name('announcements.index');
         Route::post('announcements', [Officer\AnnouncementController::class, 'store'])->name('announcements.store');
 
@@ -69,6 +73,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('task-history/{auditLog}/restore', [Officer\TaskBoardController::class, 'restore'])->name('tasks.restore');
 
         Route::get('events', [Officer\EventPlanningController::class, 'index'])->name('events.index');
+        Route::get('events/{event}/attendance', [Officer\EventAttendanceController::class, 'index'])->name('events.attendance.index');
+        Route::post('events/{event}/attendance', [Officer\EventAttendanceController::class, 'checkIn'])->name('events.attendance.check-in');
         Route::get('voting', [Officer\ElectionController::class, 'index'])->name('voting.index');
         Route::post('voting', [Officer\ElectionController::class, 'store'])->name('voting.store');
         Route::post('voting/{election}/open', [Officer\ElectionController::class, 'open'])->name('voting.open');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Committee;
 use App\Models\Organization;
+use App\Models\OrganizationJoinRequest;
 use App\Models\User;
 use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
@@ -69,12 +70,22 @@ class MembersController extends Controller
             ->whereDoesntHave('officerProfile')
             ->whereDoesntHave('organizations')
             ->orderBy('name')->get(['id', 'name', 'email']);
+        $isPresident = strcasecmp(trim((string) $officer->position), 'president') === 0;
+        $membershipRequests = $isPresident
+            ? OrganizationJoinRequest::query()->where('organization_id', $officer->organization_id)->where('status', 'pending')
+                ->with('user:id,name,email')->oldest()->get()->map(fn (OrganizationJoinRequest $joinRequest) => [
+                    'id' => $joinRequest->id, 'name' => $joinRequest->user?->name, 'email' => $joinRequest->user?->email,
+                    'requested_at' => $joinRequest->created_at,
+                ])
+            : collect();
 
         return Inertia::render('officer/members/index', [
             'members' => $members,
             'executives' => $executives,
             'organizations' => $organizations,
             'available_users' => $availableUsers,
+            'membership_requests' => $membershipRequests,
+            'can_review_membership_requests' => $isPresident,
             'analytics' => [
                 'member_count' => $members->count(),
                 'officer_count' => $members->where('is_officer', true)->count(),
@@ -102,11 +113,6 @@ class MembersController extends Controller
         ]);
 
         $member = User::query()->whereDoesntHave('officerProfile')->findOrFail((int) $data['user_id']);
-        $alreadyInAnotherOrganization = $member->organizations()
-            ->where('organizations.id', '!=', $data['organization_id'])->exists();
-        if ($alreadyInAnotherOrganization) {
-            return back()->withErrors(['user_id' => 'Students can belong to one organization only.']);
-        }
         $member->organizations()->syncWithoutDetaching([$data['organization_id']]);
 
         AuditLog::create([

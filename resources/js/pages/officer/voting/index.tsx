@@ -27,6 +27,7 @@ export default function Voting({
 }) {
     const [show, setShow] = useState(false);
     const [busy, setBusy] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const [data, setData] = useState({
         title: '',
         organization_id: '',
@@ -38,6 +39,7 @@ export default function Voting({
     const submit = (e: FormEvent) => {
         e.preventDefault();
         setBusy(true);
+        setErrors({});
         router.post(
             '/officer/voting',
             {
@@ -49,6 +51,8 @@ export default function Voting({
                     .filter(Boolean),
             },
             {
+                onError: (validationErrors) =>
+                    setErrors(validationErrors as Record<string, string>),
                 onSuccess: () => {
                     setShow(false);
                     setData({
@@ -100,7 +104,7 @@ export default function Voting({
                         onSubmit={submit}
                         className="grid gap-4 md:grid-cols-2"
                     >
-                        <Field label="Election title">
+                        <Field label="Election title" error={errors.title}>
                             <input
                                 required
                                 value={data.title}
@@ -109,7 +113,7 @@ export default function Voting({
                                 }
                             />
                         </Field>
-                        <Field label="Scope">
+                        <Field label="Scope" error={errors.organization_id}>
                             <select
                                 value={data.organization_id}
                                 onChange={(e) =>
@@ -131,7 +135,10 @@ export default function Voting({
                                 ))}
                             </select>
                         </Field>
-                        <Field label="Positions (separate with commas)">
+                        <Field
+                            label="Positions (separate with commas)"
+                            error={errors.positions}
+                        >
                             <input
                                 required
                                 value={data.positions}
@@ -144,31 +151,29 @@ export default function Voting({
                                 placeholder="President, Secretary"
                             />
                         </Field>
-                        <Field label="Starts">
-                            <input
-                                required
-                                type="datetime-local"
+                        <Field label="Starts (AM/PM)" error={errors.starts_at}>
+                            <DateTimeField
                                 value={data.starts_at}
-                                onChange={(e) =>
+                                onChange={(value) =>
                                     setData({
                                         ...data,
-                                        starts_at: e.target.value,
+                                        starts_at: value,
                                     })
                                 }
                             />
+                            <TimeHint value={data.starts_at} />
                         </Field>
-                        <Field label="Ends">
-                            <input
-                                required
-                                type="datetime-local"
+                        <Field label="Ends (AM/PM)" error={errors.ends_at}>
+                            <DateTimeField
                                 value={data.ends_at}
-                                onChange={(e) =>
+                                onChange={(value) =>
                                     setData({
                                         ...data,
-                                        ends_at: e.target.value,
+                                        ends_at: value,
                                     })
                                 }
                             />
+                            <TimeHint value={data.ends_at} />
                         </Field>
                         <div className="flex items-end gap-2">
                             <button
@@ -258,19 +263,122 @@ export default function Voting({
         </CouncilLayout>
     );
 }
+
+function TimeHint({ value }: { value: string }) {
+    if (!value) return null;
+
+    const selected = new Date(value);
+    if (Number.isNaN(selected.getTime())) return null;
+
+    return (
+        <p className="text-xs font-normal text-[#5B6478]">
+            Selected: {selected.toLocaleString(undefined, {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+                hour12: true,
+            })}
+        </p>
+    );
+}
+
+function DateTimeField({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+}) {
+    const date = value.slice(0, 10);
+    const [rawHour = '12', minute = '00'] = (value.split('T')[1] ?? '00:00').split(':');
+    const hour24 = Number(rawHour);
+    const period = hour24 >= 12 ? 'PM' : 'AM';
+    const hour = String(hour24 % 12 || 12).padStart(2, '0');
+    const update = (next: {
+        date?: string;
+        hour?: string;
+        minute?: string;
+        period?: 'AM' | 'PM';
+    }) => {
+        const nextDate = next.date ?? date;
+        const nextHour = Number(next.hour ?? hour);
+        const nextMinute = next.minute ?? minute;
+        const nextPeriod = next.period ?? period;
+        const nextHour24 = (nextHour % 12) + (nextPeriod === 'PM' ? 12 : 0);
+
+        onChange(
+            nextDate
+                ? `${nextDate}T${String(nextHour24).padStart(2, '0')}:${nextMinute}`
+                : '',
+        );
+    };
+
+    return (
+        <div className="grid grid-cols-[minmax(0,1fr)_4.5rem_4.5rem_4.5rem] gap-2">
+            <input
+                required
+                type="date"
+                aria-label="Date"
+                className="rounded-lg border bg-transparent px-3 py-2"
+                value={date}
+                onChange={(event) => update({ date: event.target.value })}
+            />
+            <select
+                aria-label="Hour"
+                className="rounded-lg border bg-transparent px-2 py-2"
+                value={hour}
+                onChange={(event) => update({ hour: event.target.value })}
+            >
+                {Array.from({ length: 12 }, (_, index) => {
+                    const option = String(index + 1).padStart(2, '0');
+                    return <option key={option}>{option}</option>;
+                })}
+            </select>
+            <select
+                aria-label="Minute"
+                className="rounded-lg border bg-transparent px-2 py-2"
+                value={minute}
+                onChange={(event) => update({ minute: event.target.value })}
+            >
+                {Array.from({ length: 60 }, (_, index) => {
+                    const option = String(index).padStart(2, '0');
+                    return <option key={option}>{option}</option>;
+                })}
+            </select>
+            <select
+                aria-label="AM or PM"
+                className="rounded-lg border bg-transparent px-2 py-2"
+                value={period}
+                onChange={(event) =>
+                    update({ period: event.target.value as 'AM' | 'PM' })
+                }
+            >
+                <option>AM</option>
+                <option>PM</option>
+            </select>
+        </div>
+    );
+}
+
 function Field({
     label,
     children,
+    error,
 }: {
     label: string;
     children: React.ReactNode;
+    error?: string;
 }) {
     return (
         <label className="grid gap-1 text-sm font-medium">
             {label}
-            <span className="[&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:px-3 [&>input]:py-2 [&>select]:w-full [&>select]:rounded-lg [&>select]:border [&>select]:px-3 [&>select]:py-2">
+            <span className="[&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:px-3 [&>input]:py-2 [&>select]:w-full [&>select]:rounded-lg [&>select]:border [&>select]:px-3 [&>select]:py-2 [&>select>option]:text-[#173a21]">
                 {children}
             </span>
+            {error && (
+                <p className="text-xs font-normal text-red-600 dark:text-red-400" role="alert">
+                    {error}
+                </p>
+            )}
         </label>
     );
 }

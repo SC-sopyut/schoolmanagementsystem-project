@@ -127,7 +127,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $account?->loadMissing('studentProfile'),
                 'officer' => $officerProfile ? [
                     'label' => $officerProfile->dashboardLabel(),
                     'organization' => $officerProfile->organization?->name,
@@ -139,6 +139,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
             ],
             'notifications' => $notifications,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

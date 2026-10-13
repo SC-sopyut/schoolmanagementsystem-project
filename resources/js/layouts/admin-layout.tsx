@@ -8,6 +8,8 @@ import {
     ShieldCheck,
     Users,
     UserRoundCog,
+    UserCheck,
+    ListChecks,
 } from 'lucide-react';
 import {
     Sidebar,
@@ -40,6 +42,8 @@ export default function AdminLayout({
             icon: Users,
         },
         { label: 'All users', href: '/admin/users', icon: UserRoundCog },
+        { label: 'Student masterlist', href: '/admin/student-masterlist', icon: ListChecks },
+        { label: 'Pending registrations', href: '/admin/pending-registrations', icon: UserCheck },
         { label: 'Identity audit', href: '/admin/audit', icon: ClipboardList },
     ];
 

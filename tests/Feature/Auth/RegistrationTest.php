@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\StudentMasterlist;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -13,8 +14,16 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    StudentMasterlist::create(['student_id_no' => '2024-01-00001']);
+
     $response = $this->post(route('register.store'), [
-        'name' => 'Test User',
+        'student_id_no' => '2024-01-00001',
+        'first_name' => 'Test',
+        'middle_name' => null,
+        'last_name' => 'User',
+        'suffix' => null,
+        'course' => 'Bachelor of Science in Information Technology',
+        'year_level' => 1,
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -22,4 +31,23 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertDatabaseHas('student_profiles', [
+        'student_id_no' => '2024-01-00001',
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'status' => 'pending',
+    ]);
+});
+
+test('registration requires a school ID from the masterlist', function () {
+    $response = $this->from(route('register'))->post(route('register.store'), [
+        'student_id_no' => '2024-01-99999',
+        'first_name' => 'Test', 'last_name' => 'User',
+        'course' => 'Bachelor of Science in Information Technology', 'year_level' => 1,
+        'email' => 'test@example.com', 'password' => 'password', 'password_confirmation' => 'password',
+    ]);
+
+    $response->assertRedirect(route('register'));
+    $response->assertSessionHasErrors('student_id_no');
+    $this->assertGuest();
 });

@@ -7,6 +7,7 @@ import {
     Megaphone,
     Send,
     Users,
+    Building2,
     Vote,
     Wallet,
 } from 'lucide-react';
@@ -62,6 +63,7 @@ export const studentNav = (): NavItem[] => [
     { label: 'Submit a Concern', href: submitConcern().url, icon: Send },
     { label: 'My Concerns', href: myConcerns().url, icon: CircleAlert },
     { label: 'Events', href: studentEvents().url, icon: CalendarDays },
+    { label: 'Organizations', href: '/student/organizations', icon: Building2 },
     {
         label: 'Announcements',
         href: studentAnnouncements().url,
