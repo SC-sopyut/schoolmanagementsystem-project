@@ -92,8 +92,8 @@ class TaskBoardController extends Controller
             'can_create_follow_ups' => $officer->isTaskManager() && ! $officer->hasCouncilWideTaskAuthority(),
             // (org, officer) pairs keep the task form scoped to co-officers in each organization.
             'assignees' => DB::table('officers')->join('users', 'users.id', '=', 'officers.user_id')
-                    ->whereIn('officers.organization_id', $orgIds)
-                    ->get(['users.id', 'users.name', 'officers.organization_id as organization_id'])
+                ->whereIn('officers.organization_id', $orgIds)
+                ->get(['users.id', 'users.name', 'officers.organization_id as organization_id'])
                 ->merge(DB::table('organization_user')->join('officers', 'officers.user_id', '=', 'organization_user.user_id')
                     ->join('users', 'users.id', '=', 'organization_user.user_id')
                     ->whereIn('organization_user.organization_id', $orgIds)

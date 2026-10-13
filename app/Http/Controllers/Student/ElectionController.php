@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreVoteRequest;
-use App\Models\Election;
 use App\Models\Ballot;
+use App\Models\Election;
 use App\Models\VoteRecord;
 use App\Support\OfficerScope;
 use Illuminate\Database\QueryException;

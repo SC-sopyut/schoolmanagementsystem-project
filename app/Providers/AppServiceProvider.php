@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Committee;
+use App\Models\Election;
+use App\Policies\ElectionPolicy;
+use App\Policies\TaskPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -24,8 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::policy(\App\Models\Committee::class, \App\Policies\TaskPolicy::class);
-        Gate::policy(\App\Models\Election::class, \App\Policies\ElectionPolicy::class);
+        Gate::policy(Committee::class, TaskPolicy::class);
+        Gate::policy(Election::class, ElectionPolicy::class);
 
         $this->configureDefaults();
     }

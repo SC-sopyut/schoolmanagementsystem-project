@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Officer;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Election;
-use App\Models\User;
+use App\Models\Organization;
 use App\Support\OfficerScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,11 +18,12 @@ class ElectionController extends Controller
     {
         $officer = OfficerScope::profile($request->user());
         $ids = $officer->visibleOrganizationIds();
+
         return Inertia::render('officer/voting/index', [
             'elections' => Election::where(fn ($q) => $q->whereIn('organization_id', $ids)->orWhereNull('organization_id'))
                 ->with('organization:id,name')->withCount(['candidates', 'votes'])->latest('starts_at')->get()
                 ->map(fn (Election $e) => ['id' => $e->id, 'title' => $e->title, 'status' => $e->status, 'organization' => $e->organization->name ?? 'School-wide', 'starts_at' => $e->starts_at, 'ends_at' => $e->ends_at, 'candidates_count' => $e->candidates_count, 'votes_count' => $e->votes_count]),
-            'organizations' => \App\Models\Organization::whereIn('id', $ids)->get(['id', 'name']),
+            'organizations' => Organization::whereIn('id', $ids)->get(['id', 'name']),
             'can_create_school_wide' => (bool) $officer->organization?->is_council,
         ]);
     }
@@ -33,6 +34,7 @@ class ElectionController extends Controller
         $this->authorize('create', [Election::class, $data['organization_id'] ?? null]);
         $election = Election::create([...$data, 'created_by' => $request->user()->id, 'status' => 'draft']);
         $this->audit($request, $election, 'election.created');
+
         return back()->with('success', 'Election created as a draft.');
     }
 
@@ -41,7 +43,9 @@ class ElectionController extends Controller
         $this->authorize('manage', $election);
         abort_if($election->status !== 'draft', 422, 'Only drafts can be opened.');
         abort_if($election->candidates()->count() === 0, 422, 'Add at least one candidate before opening.');
-        $election->update(['status' => 'open']); $this->audit($request, $election, 'election.opened');
+        $election->update(['status' => 'open']);
+        $this->audit($request, $election, 'election.opened');
+
         return back()->with('success', 'Election is open.');
     }
 
@@ -49,7 +53,9 @@ class ElectionController extends Controller
     {
         $this->authorize('manage', $election);
         abort_if($election->status !== 'open', 422, 'Only open elections can be closed.');
-        $election->update(['status' => 'closed']); $this->audit($request, $election, 'election.closed');
+        $election->update(['status' => 'closed']);
+        $this->audit($request, $election, 'election.closed');
+
         return back()->with('success', 'Election closed.');
     }
 
@@ -57,7 +63,9 @@ class ElectionController extends Controller
     {
         $this->authorize('manage', $election);
         abort_if($election->status !== 'closed', 422, 'Close the election before publishing results.');
-        $election->update(['results_published_at' => now()]); $this->audit($request, $election, 'election.results_published');
+        $election->update(['results_published_at' => now()]);
+        $this->audit($request, $election, 'election.results_published');
+
         return back()->with('success', 'Results published.');
     }
 

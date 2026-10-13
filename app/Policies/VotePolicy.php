@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Election;
 use App\Models\User;
+use App\Models\VoteRecord;
 
 class VotePolicy
 {
@@ -35,7 +36,7 @@ class VotePolicy
             }
         }
 
-        $alreadyVoted = \App\Models\VoteRecord::query()
+        $alreadyVoted = VoteRecord::query()
             ->where('election_id', $election->id)
             ->where('user_id', $user->id)
             ->where('position', $position)
