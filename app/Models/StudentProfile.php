@@ -14,6 +14,7 @@ class StudentProfile extends Model
         'Bachelor of Elementary Education' => 'LOTES',
         'Bachelor of Secondary Education' => 'LOTES',
     ];
+
     public const COURSES = [
         'Bachelor of Science in Criminology',
         'Bachelor of Science in Information Technology',

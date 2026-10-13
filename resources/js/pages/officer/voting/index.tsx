@@ -272,7 +272,8 @@ function TimeHint({ value }: { value: string }) {
 
     return (
         <p className="text-xs font-normal text-[#5B6478]">
-            Selected: {selected.toLocaleString(undefined, {
+            Selected:{' '}
+            {selected.toLocaleString(undefined, {
                 dateStyle: 'medium',
                 timeStyle: 'short',
                 hour12: true,
@@ -289,7 +290,9 @@ function DateTimeField({
     onChange: (value: string) => void;
 }) {
     const date = value.slice(0, 10);
-    const [rawHour = '12', minute = '00'] = (value.split('T')[1] ?? '00:00').split(':');
+    const [rawHour = '12', minute = '00'] = (
+        value.split('T')[1] ?? '00:00'
+    ).split(':');
     const hour24 = Number(rawHour);
     const period = hour24 >= 12 ? 'PM' : 'AM';
     const hour = String(hour24 % 12 || 12).padStart(2, '0');
@@ -375,7 +378,10 @@ function Field({
                 {children}
             </span>
             {error && (
-                <p className="text-xs font-normal text-red-600 dark:text-red-400" role="alert">
+                <p
+                    className="text-xs font-normal text-red-600 dark:text-red-400"
+                    role="alert"
+                >
                     {error}
                 </p>
             )}

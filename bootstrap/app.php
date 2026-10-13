@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsureAdmin;
-use App\Http\Middleware\EnsureUserIsOfficer;
 use App\Http\Middleware\EnsureStudentApproved;
+use App\Http\Middleware\EnsureUserIsOfficer;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
