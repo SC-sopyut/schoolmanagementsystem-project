@@ -75,13 +75,25 @@ export default function Events({
         .filter((e) => new Date(e.starts_at) >= new Date())
         .slice(0, 3);
     const reschedule = (event: Ev) => {
-        const starts_at = window.prompt('New start date and time (YYYY-MM-DD HH:MM)', event.starts_at.slice(0, 16));
+        const starts_at = window.prompt(
+            'New start date and time (YYYY-MM-DD HH:MM)',
+            event.starts_at.slice(0, 16),
+        );
         if (!starts_at) return;
-        const ends_at = window.prompt('New end date and time (YYYY-MM-DD HH:MM)', event.ends_at.slice(0, 16));
+        const ends_at = window.prompt(
+            'New end date and time (YYYY-MM-DD HH:MM)',
+            event.ends_at.slice(0, 16),
+        );
         if (!ends_at) return;
-        const reason = window.prompt('Why are these event dates changing? This will be saved in the activity log.');
+        const reason = window.prompt(
+            'Why are these event dates changing? This will be saved in the activity log.',
+        );
         if (!reason?.trim()) return;
-        router.post(`/officer/events/${event.id}/reschedule`, { starts_at, ends_at, reason }, { preserveScroll: true });
+        router.post(
+            `/officer/events/${event.id}/reschedule`,
+            { starts_at, ends_at, reason },
+            { preserveScroll: true },
+        );
     };
 
     return (
@@ -138,7 +150,13 @@ export default function Events({
                                             <div className="mb-2 flex items-center justify-between rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
                                                 <span>Expired</span>
                                                 {e.can_manage && (
-                                                    <button type="button" onClick={() => reschedule(e)} className="font-semibold underline">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            reschedule(e)
+                                                        }
+                                                        className="font-semibold underline"
+                                                    >
                                                         Change dates
                                                     </button>
                                                 )}
@@ -147,14 +165,15 @@ export default function Events({
                                         <p className="font-semibold">
                                             {e.title}
                                         </p>
-                                        {e.can_manage && e.status !== 'expired' && (
-                                            <Link
-                                                href={`/officer/events/${e.id}/attendance`}
-                                                className="mt-3 inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
-                                            >
-                                                Open attendance
-                                            </Link>
-                                        )}
+                                        {e.can_manage &&
+                                            e.status !== 'expired' && (
+                                                <Link
+                                                    href={`/officer/events/${e.id}/attendance`}
+                                                    className="mt-3 inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                                                >
+                                                    Open attendance
+                                                </Link>
+                                            )}
                                         <p className="mb-3 flex flex-wrap items-center gap-x-3 text-xs text-[#5B6478]">
                                             <span>
                                                 {new Date(

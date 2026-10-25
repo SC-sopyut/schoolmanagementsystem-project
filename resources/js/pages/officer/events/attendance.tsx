@@ -37,7 +37,9 @@ export default function Attendance({
     const [checkingIn, setCheckingIn] = useState(false);
     const [cameraOpen, setCameraOpen] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
-    const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+    const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
+        null,
+    );
     const videoRef = useRef<HTMLVideoElement>(null);
     const scannerControlsRef = useRef<IScannerControls | null>(null);
     const scannerActiveRef = useRef(false);
@@ -144,7 +146,10 @@ export default function Attendance({
                 onFinish: () => setCheckingIn(false),
             },
         );
-    const selectedStudent = student ?? matches.find((match) => match.id === selectedStudentId) ?? null;
+    const selectedStudent =
+        student ??
+        matches.find((match) => match.id === selectedStudentId) ??
+        null;
 
     return (
         <CouncilLayout title="Event check-in">
@@ -249,12 +254,19 @@ export default function Attendance({
                             Matching students
                             <select
                                 value={selectedStudentId ?? ''}
-                                onChange={(event) => setSelectedStudentId(Number(event.target.value))}
+                                onChange={(event) =>
+                                    setSelectedStudentId(
+                                        Number(event.target.value),
+                                    )
+                                }
                                 className="rounded-lg border bg-transparent px-3 py-2"
                             >
                                 {matches.map((match) => (
                                     <option key={match.id} value={match.id}>
-                                        {match.name}{match.student_id_no ? ` · ${match.student_id_no}` : ''}
+                                        {match.name}
+                                        {match.student_id_no
+                                            ? ` · ${match.student_id_no}`
+                                            : ''}
                                     </option>
                                 ))}
                             </select>
@@ -336,13 +348,22 @@ function StudentCard({
                     <h4 className="text-sm font-semibold">Attendance record</h4>
                     <ul className="mt-2 space-y-2 text-sm text-[#5B6478]">
                         {student.attendance_sessions.map((session) => (
-                            <li key={session.id} className="rounded-md bg-black/5 px-3 py-2 dark:bg-white/5">
-                                <span className="font-medium text-foreground">In:</span>{' '}
+                            <li
+                                key={session.id}
+                                className="rounded-md bg-black/5 px-3 py-2 dark:bg-white/5"
+                            >
+                                <span className="text-foreground font-medium">
+                                    In:
+                                </span>{' '}
                                 {formatAttendanceDate(session.checked_in_at)}
                                 <br />
-                                <span className="font-medium text-foreground">Out:</span>{' '}
+                                <span className="text-foreground font-medium">
+                                    Out:
+                                </span>{' '}
                                 {session.checked_out_at
-                                    ? formatAttendanceDate(session.checked_out_at)
+                                    ? formatAttendanceDate(
+                                          session.checked_out_at,
+                                      )
                                     : 'Still checked in'}
                             </li>
                         ))}

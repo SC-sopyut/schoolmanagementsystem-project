@@ -82,7 +82,10 @@ export default function Login({ status }: { status?: string }) {
                                 title="Enter a valid ACC school email, for example you@acc.edu.ph."
                                 placeholder="you@acc.edu.ph"
                                 onChange={(e) =>
-                                    setData('email', e.target.value.toLowerCase())
+                                    setData(
+                                        'email',
+                                        e.target.value.toLowerCase(),
+                                    )
                                 }
                                 className="h-10 w-full rounded-lg border-slate-300 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                             />

@@ -43,7 +43,9 @@ export const officerNav = (): NavItem[] => [
     { label: 'Concerns', href: officerConcerns().url, icon: CircleAlert },
     { label: 'Events', href: officerEvents().url, icon: CalendarDays },
     {
-        label: 'Voting', href: null, icon: Vote,
+        label: 'Voting',
+        href: null,
+        icon: Vote,
         children: [
             { label: 'Elections', href: '/officer/voting' },
             { label: 'Cast a ballot', href: studentElections().url },
@@ -60,7 +62,9 @@ export const presidentNav = (): NavItem[] => [
     { label: 'Concerns', href: officerConcerns().url, icon: CircleAlert },
     { label: 'Events', href: officerEvents().url, icon: CalendarDays },
     {
-        label: 'Voting', href: null, icon: Vote,
+        label: 'Voting',
+        href: null,
+        icon: Vote,
         children: [
             { label: 'Elections', href: '/officer/voting' },
             { label: 'Cast a ballot', href: studentElections().url },
@@ -79,7 +83,9 @@ export const studentNav = (): NavItem[] => [
     { label: 'Events', href: studentEvents().url, icon: CalendarDays },
     { label: 'Organizations', href: '/student/organizations', icon: Building2 },
     {
-        label: 'Voting', href: null, icon: Vote,
+        label: 'Voting',
+        href: null,
+        icon: Vote,
         children: [{ label: 'Cast a ballot', href: studentElections().url }],
     },
     {

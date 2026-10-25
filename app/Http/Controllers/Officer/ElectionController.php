@@ -8,8 +8,9 @@ use App\Models\Candidate;
 use App\Models\Election;
 use App\Models\Organization;
 use App\Models\User;
-use App\Support\OfficerScope;
 use App\Support\ExpiryService;
+use App\Support\OfficerScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -189,7 +190,7 @@ class ElectionController extends Controller
         AuditLog::create(['actor_type' => $request->user()->getMorphClass(), 'actor_id' => $request->user()->id, 'action' => $action, 'subject_type' => Election::class, 'subject_id' => $election->id, 'organization_id' => $election->organization_id, 'metadata' => ['title' => $election->title], 'ip_address' => $request->ip()]);
     }
 
-    /** @return \Illuminate\Database\Eloquent\Builder<User> */
+    /** @return Builder<User> */
     private function eligibleCandidates(Election $election)
     {
         if ($election->isCouncilWide()) {

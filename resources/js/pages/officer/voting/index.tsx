@@ -42,7 +42,15 @@ export default function Voting({
         {},
     );
     const [candidateData, setCandidateData] = useState<
-        Record<number, { user_id: string; position: string; party_name: string; platform: string }>
+        Record<
+            number,
+            {
+                user_id: string;
+                position: string;
+                party_name: string;
+                platform: string;
+            }
+        >
     >({});
     const [editing, setEditing] = useState<Election | null>(null);
     const [editData, setEditData] = useState({
@@ -99,18 +107,32 @@ export default function Voting({
             onError: (responseErrors) =>
                 setActionErrors((current) => ({
                     ...current,
-                    [id]: Object.values(responseErrors)[0] ?? 'Unable to update this election.',
+                    [id]:
+                        Object.values(responseErrors)[0] ??
+                        'Unable to update this election.',
                 })),
         });
     };
     const reschedule = (election: Election) => {
-        const starts_at = window.prompt('New start date and time (YYYY-MM-DD HH:MM)', election.starts_at.slice(0, 16));
+        const starts_at = window.prompt(
+            'New start date and time (YYYY-MM-DD HH:MM)',
+            election.starts_at.slice(0, 16),
+        );
         if (!starts_at) return;
-        const ends_at = window.prompt('New end date and time (YYYY-MM-DD HH:MM)', election.ends_at.slice(0, 16));
+        const ends_at = window.prompt(
+            'New end date and time (YYYY-MM-DD HH:MM)',
+            election.ends_at.slice(0, 16),
+        );
         if (!ends_at) return;
-        const reason = window.prompt('Why are these election dates changing? This will be saved in the activity log.');
+        const reason = window.prompt(
+            'Why are these election dates changing? This will be saved in the activity log.',
+        );
         if (!reason?.trim()) return;
-        router.post(`/officer/voting/${election.id}/reschedule`, { starts_at, ends_at, reason }, { preserveScroll: true });
+        router.post(
+            `/officer/voting/${election.id}/reschedule`,
+            { starts_at, ends_at, reason },
+            { preserveScroll: true },
+        );
     };
     const candidateForm = (election: Election) =>
         candidateData[election.id] ?? {
@@ -137,7 +159,9 @@ export default function Voting({
             onError: (responseErrors) =>
                 setActionErrors((current) => ({
                     ...current,
-                    [election.id]: Object.values(responseErrors)[0] ?? 'Unable to add this candidate.',
+                    [election.id]:
+                        Object.values(responseErrors)[0] ??
+                        'Unable to add this candidate.',
                 })),
         });
     };
@@ -161,11 +185,15 @@ export default function Voting({
             `/officer/voting/${editing.id}`,
             {
                 ...editData,
-                positions: editData.positions.split(',').map((position) => position.trim()).filter(Boolean),
+                positions: editData.positions
+                    .split(',')
+                    .map((position) => position.trim())
+                    .filter(Boolean),
             },
             {
                 preserveScroll: true,
-                onError: (validationErrors) => setErrors(validationErrors as Record<string, string>),
+                onError: (validationErrors) =>
+                    setErrors(validationErrors as Record<string, string>),
                 onSuccess: () => setEditing(null),
                 onFinish: () => setBusy(false),
             },
@@ -298,40 +326,103 @@ export default function Voting({
                 <Card className="mb-5 p-5">
                     <div className="mb-4 flex justify-between">
                         <div>
-                            <h3 className="font-semibold">Edit draft election</h3>
+                            <h3 className="font-semibold">
+                                Edit draft election
+                            </h3>
                             <p className="text-sm text-[#5B6478]">
                                 Changes are recorded in the activity log.
                             </p>
                         </div>
-                        <button onClick={() => setEditing(null)} aria-label="Close edit form">
+                        <button
+                            onClick={() => setEditing(null)}
+                            aria-label="Close edit form"
+                        >
                             <X className="h-5 w-5" />
                         </button>
                     </div>
-                    <form onSubmit={saveEdit} className="grid gap-4 md:grid-cols-2">
+                    <form
+                        onSubmit={saveEdit}
+                        className="grid gap-4 md:grid-cols-2"
+                    >
                         <Field label="Election title" error={errors.title}>
-                            <input required value={editData.title} onChange={(event) => setEditData({ ...editData, title: event.target.value })} />
+                            <input
+                                required
+                                value={editData.title}
+                                onChange={(event) =>
+                                    setEditData({
+                                        ...editData,
+                                        title: event.target.value,
+                                    })
+                                }
+                            />
                         </Field>
-                        <Field label="Positions (separate with commas)" error={errors.positions}>
-                            <input required disabled={editing.candidates_count > 0} value={editData.positions} onChange={(event) => setEditData({ ...editData, positions: event.target.value })} />
+                        <Field
+                            label="Positions (separate with commas)"
+                            error={errors.positions}
+                        >
+                            <input
+                                required
+                                disabled={editing.candidates_count > 0}
+                                value={editData.positions}
+                                onChange={(event) =>
+                                    setEditData({
+                                        ...editData,
+                                        positions: event.target.value,
+                                    })
+                                }
+                            />
                         </Field>
                         <Field label="Starts (AM/PM)" error={errors.starts_at}>
-                            <DateTimeField value={editData.starts_at} onChange={(value) => setEditData({ ...editData, starts_at: value })} />
+                            <DateTimeField
+                                value={editData.starts_at}
+                                onChange={(value) =>
+                                    setEditData({
+                                        ...editData,
+                                        starts_at: value,
+                                    })
+                                }
+                            />
                         </Field>
                         <Field label="Ends (AM/PM)" error={errors.ends_at}>
-                            <DateTimeField value={editData.ends_at} onChange={(value) => setEditData({ ...editData, ends_at: value })} />
+                            <DateTimeField
+                                value={editData.ends_at}
+                                onChange={(value) =>
+                                    setEditData({ ...editData, ends_at: value })
+                                }
+                            />
                         </Field>
                         <Field label="Description" error={errors.description}>
-                            <input value={editData.description} onChange={(event) => setEditData({ ...editData, description: event.target.value })} />
+                            <input
+                                value={editData.description}
+                                onChange={(event) =>
+                                    setEditData({
+                                        ...editData,
+                                        description: event.target.value,
+                                    })
+                                }
+                            />
                         </Field>
                         <div className="flex items-end gap-2">
-                            <button type="button" onClick={() => setEditing(null)} className="rounded-lg border px-4 py-2 text-sm">Cancel</button>
-                            <button disabled={busy} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
+                            <button
+                                type="button"
+                                onClick={() => setEditing(null)}
+                                className="rounded-lg border px-4 py-2 text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                disabled={busy}
+                                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
+                            >
                                 {busy ? 'Saving…' : 'Save changes'}
                             </button>
                         </div>
                     </form>
                     {editing.candidates_count > 0 && (
-                        <p className="mt-3 text-xs text-[#5B6478]">Positions are locked because candidates have already been added.</p>
+                        <p className="mt-3 text-xs text-[#5B6478]">
+                            Positions are locked because candidates have already
+                            been added.
+                        </p>
                     )}
                 </Card>
             )}
@@ -355,7 +446,7 @@ export default function Voting({
                                               ? 'gray'
                                               : e.status === 'expired'
                                                 ? 'red'
-                                              : 'yellow'
+                                                : 'yellow'
                                     }
                                 >
                                     {e.status}
@@ -381,13 +472,17 @@ export default function Voting({
                                         <ul className="mt-1 space-y-1 text-xs text-[#bad5b9]">
                                             {e.candidates.map((candidate) => (
                                                 <li key={candidate.id}>
-                                                    {candidate.name} · {candidate.position} · {candidate.party_name || 'Independent'}
+                                                    {candidate.name} ·{' '}
+                                                    {candidate.position} ·{' '}
+                                                    {candidate.party_name ||
+                                                        'Independent'}
                                                 </li>
                                             ))}
                                         </ul>
                                     ) : (
                                         <p className="mt-1 text-xs text-amber-700">
-                                            Add at least one candidate before opening voting.
+                                            Add at least one candidate before
+                                            opening voting.
                                         </p>
                                     )}
                                     <div className="mt-3 grid gap-2">
@@ -399,18 +494,26 @@ export default function Voting({
                                                     ...current,
                                                     [e.id]: {
                                                         ...candidateForm(e),
-                                                        user_id: event.target.value,
+                                                        user_id:
+                                                            event.target.value,
                                                     },
                                                 }))
                                             }
                                             className="w-full rounded-md border border-[#31583a] bg-[#102d19] px-2 py-1.5 text-xs text-[#f0f7ed]"
                                         >
-                                            <option value="">Choose a candidate</option>
-                                            {e.eligible_candidates.map((person) => (
-                                                <option key={person.id} value={person.id}>
-                                                    {person.name}
-                                                </option>
-                                            ))}
+                                            <option value="">
+                                                Choose a candidate
+                                            </option>
+                                            {e.eligible_candidates.map(
+                                                (person) => (
+                                                    <option
+                                                        key={person.id}
+                                                        value={person.id}
+                                                    >
+                                                        {person.name}
+                                                    </option>
+                                                ),
+                                            )}
                                         </select>
                                         <select
                                             aria-label={`Position for ${e.title}`}
@@ -420,14 +523,17 @@ export default function Voting({
                                                     ...current,
                                                     [e.id]: {
                                                         ...candidateForm(e),
-                                                        position: event.target.value,
+                                                        position:
+                                                            event.target.value,
                                                     },
                                                 }))
                                             }
                                             className="w-full rounded-md border border-[#31583a] bg-[#102d19] px-2 py-1.5 text-xs text-[#f0f7ed]"
                                         >
                                             {e.positions.map((position) => (
-                                                <option key={position}>{position}</option>
+                                                <option key={position}>
+                                                    {position}
+                                                </option>
                                             ))}
                                         </select>
                                         <input
@@ -438,7 +544,8 @@ export default function Voting({
                                                     ...current,
                                                     [e.id]: {
                                                         ...candidateForm(e),
-                                                        party_name: event.target.value,
+                                                        party_name:
+                                                            event.target.value,
                                                     },
                                                 }))
                                             }
@@ -453,7 +560,8 @@ export default function Voting({
                                                     ...current,
                                                     [e.id]: {
                                                         ...candidateForm(e),
-                                                        platform: event.target.value,
+                                                        platform:
+                                                            event.target.value,
                                                     },
                                                 }))
                                             }
@@ -474,10 +582,16 @@ export default function Voting({
                             <div className="mt-4">
                                 {e.status === 'draft' && (
                                     <div className="flex flex-wrap gap-2">
-                                        <button onClick={() => beginEdit(e)} className="rounded-md border px-3 py-1.5 text-xs font-semibold">
+                                        <button
+                                            onClick={() => beginEdit(e)}
+                                            className="rounded-md border px-3 py-1.5 text-xs font-semibold"
+                                        >
                                             Edit draft
                                         </button>
-                                        <button onClick={() => action(e.id, 'open')} className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white">
+                                        <button
+                                            onClick={() => action(e.id, 'open')}
+                                            className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                                        >
                                             Open voting
                                         </button>
                                     </div>
@@ -510,7 +624,10 @@ export default function Voting({
                                 )}
                             </div>
                             {actionErrors[e.id] && (
-                                <p className="mt-2 text-xs text-red-600" role="alert">
+                                <p
+                                    className="mt-2 text-xs text-red-600"
+                                    role="alert"
+                                >
                                     {actionErrors[e.id]}
                                 </p>
                             )}

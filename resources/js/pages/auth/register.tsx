@@ -92,7 +92,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             pattern="[^0-9]+"
                                             title="Names cannot contain numbers."
                                             onInput={(event) => {
-                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                                event.currentTarget.value =
+                                                    event.currentTarget.value.replace(
+                                                        /\d/g,
+                                                        '',
+                                                    );
                                             }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />
@@ -119,7 +123,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             pattern="[^0-9]+"
                                             title="Names cannot contain numbers."
                                             onInput={(event) => {
-                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                                event.currentTarget.value =
+                                                    event.currentTarget.value.replace(
+                                                        /\d/g,
+                                                        '',
+                                                    );
                                             }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />
@@ -144,7 +152,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             pattern="[^0-9]+"
                                             title="Names cannot contain numbers."
                                             onInput={(event) => {
-                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                                event.currentTarget.value =
+                                                    event.currentTarget.value.replace(
+                                                        /\d/g,
+                                                        '',
+                                                    );
                                             }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />
@@ -171,7 +183,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             pattern="[^0-9]+"
                                             title="Names cannot contain numbers."
                                             onInput={(event) => {
-                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                                event.currentTarget.value =
+                                                    event.currentTarget.value.replace(
+                                                        /\d/g,
+                                                        '',
+                                                    );
                                             }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />

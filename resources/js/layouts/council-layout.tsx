@@ -2,7 +2,11 @@ import { Avatar } from '@/components/council/ui';
 import { officerNav, presidentNav, studentNav } from '@/components/council/nav';
 import { AppShell } from '@/components/app-shell';
 import { AppearanceToggle } from '@/components/appearance-toggle';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     Sidebar,
     SidebarContent,
@@ -253,30 +257,54 @@ export default function CouncilLayout({
                                         <SidebarMenuItem key={item.label}>
                                             {item.children ? (
                                                 <Collapsible
-                                                    defaultOpen={item.children.some((child) => url.split('?')[0] === child.href)}
+                                                    defaultOpen={item.children.some(
+                                                        (child) =>
+                                                            url.split(
+                                                                '?',
+                                                            )[0] === child.href,
+                                                    )}
                                                     className="group/collapsible"
                                                 >
                                                     <CollapsibleTrigger asChild>
                                                         <SidebarMenuButton
-                                                            isActive={item.children.some((child) => url.split('?')[0] === child.href)}
-                                                            tooltip={{ children: item.label }}
+                                                            isActive={item.children.some(
+                                                                (child) =>
+                                                                    url.split(
+                                                                        '?',
+                                                                    )[0] ===
+                                                                    child.href,
+                                                            )}
+                                                            tooltip={{
+                                                                children:
+                                                                    item.label,
+                                                            }}
                                                         >
                                                             <item.icon />
-                                                            <span>{item.label}</span>
+                                                            <span>
+                                                                {item.label}
+                                                            </span>
                                                             <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
                                                         </SidebarMenuButton>
                                                     </CollapsibleTrigger>
                                                     <CollapsibleContent>
-                                                        <div className="ml-7 mt-1 grid gap-1 border-l border-white/15 pl-3">
-                                                            {item.children.map((child) => (
-                                                                <Link
-                                                                    key={child.href}
-                                                                    href={child.href}
-                                                                    className={`rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/10 ${url.split('?')[0] === child.href ? 'bg-white/10 font-medium text-white' : 'text-sidebar-foreground'}`}
-                                                                >
-                                                                    {child.label}
-                                                                </Link>
-                                                            ))}
+                                                        <div className="mt-1 ml-7 grid gap-1 border-l border-white/15 pl-3">
+                                                            {item.children.map(
+                                                                (child) => (
+                                                                    <Link
+                                                                        key={
+                                                                            child.href
+                                                                        }
+                                                                        href={
+                                                                            child.href
+                                                                        }
+                                                                        className={`rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/10 ${url.split('?')[0] === child.href ? 'bg-white/10 font-medium text-white' : 'text-sidebar-foreground'}`}
+                                                                    >
+                                                                        {
+                                                                            child.label
+                                                                        }
+                                                                    </Link>
+                                                                ),
+                                                            )}
                                                         </div>
                                                     </CollapsibleContent>
                                                 </Collapsible>
