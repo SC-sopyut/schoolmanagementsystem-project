@@ -29,7 +29,8 @@ class VotePolicy
         if (! $election->isCouncilWide()) {
             $isMember = $user->organizations()
                 ->where('organizations.id', $election->organization_id)
-                ->exists();
+                ->exists()
+                || $user->officerProfile?->organization_id === $election->organization_id;
 
             if (! $isMember) {
                 return false;

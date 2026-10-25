@@ -12,7 +12,13 @@ type Student = {
     student_id_no: string | null;
     course: string | null;
     year_level: number | null;
-    checked_in_at: string | null;
+    attendance_sessions: AttendanceSession[];
+};
+
+type AttendanceSession = {
+    id: number;
+    checked_in_at: string;
+    checked_out_at: string | null;
 };
 
 export default function Attendance({
@@ -31,6 +37,7 @@ export default function Attendance({
     const [checkingIn, setCheckingIn] = useState(false);
     const [cameraOpen, setCameraOpen] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const scannerControlsRef = useRef<IScannerControls | null>(null);
     const scannerActiveRef = useRef(false);
@@ -42,6 +49,10 @@ export default function Attendance({
     }
 
     useEffect(() => () => stopCamera(), []);
+
+    useEffect(() => {
+        setSelectedStudentId(student?.id ?? matches[0]?.id ?? null);
+    }, [student?.id, matches]);
 
     async function startCamera() {
         setCameraError(null);
@@ -133,6 +144,7 @@ export default function Attendance({
                 onFinish: () => setCheckingIn(false),
             },
         );
+    const selectedStudent = student ?? matches.find((match) => match.id === selectedStudentId) ?? null;
 
     return (
         <CouncilLayout title="Event check-in">
@@ -232,24 +244,32 @@ export default function Attendance({
                             <Search className="h-4 w-4" />
                         </button>
                     </form>
+                    {matches.length > 1 && (
+                        <label className="mt-3 grid gap-1 text-sm font-medium">
+                            Matching students
+                            <select
+                                value={selectedStudentId ?? ''}
+                                onChange={(event) => setSelectedStudentId(Number(event.target.value))}
+                                className="rounded-lg border bg-transparent px-3 py-2"
+                            >
+                                {matches.map((match) => (
+                                    <option key={match.id} value={match.id}>
+                                        {match.name}{match.student_id_no ? ` · ${match.student_id_no}` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
                 </Card>
             </div>
-            <div className="mt-5 grid max-w-4xl gap-4 sm:grid-cols-2">
-                {student && (
+            <div className="mt-5 max-w-4xl">
+                {selectedStudent && (
                     <StudentCard
-                        student={student}
+                        student={selectedStudent}
                         onConfirm={confirm}
                         busy={checkingIn}
                     />
                 )}
-                {matches.map((match) => (
-                    <StudentCard
-                        key={match.id}
-                        student={match}
-                        onConfirm={confirm}
-                        busy={checkingIn}
-                    />
-                ))}
             </div>
         </CouncilLayout>
     );
@@ -264,12 +284,10 @@ function StudentCard({
     onConfirm: (student: Student) => void;
     busy: boolean;
 }) {
-    const checkedIn = student.checked_in_at
-        ? new Date(student.checked_in_at).toLocaleTimeString([], {
-              hour: 'numeric',
-              minute: '2-digit',
-          })
-        : null;
+    const openSession = student.attendance_sessions.find(
+        (session) => !session.checked_out_at,
+    );
+
     return (
         <Card className="p-5">
             <div className="flex items-center gap-3">
@@ -293,20 +311,55 @@ function StudentCard({
                     </p>
                 </div>
             </div>
-            {checkedIn ? (
-                <p className="mt-4 flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Already checked in at {checkedIn}
+            {openSession && (
+                <p className="mt-4 flex items-start gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>
+                        Currently checked in since{' '}
+                        {formatAttendanceDate(openSession.checked_in_at)}
+                    </span>
                 </p>
-            ) : (
-                <button
-                    onClick={() => onConfirm(student)}
-                    disabled={busy}
-                    className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
-                >
-                    Confirm check-in
-                </button>
+            )}
+            <button
+                onClick={() => onConfirm(student)}
+                disabled={busy}
+                className={`mt-4 rounded-lg px-4 py-2 text-sm font-semibold text-white ${
+                    openSession
+                        ? 'bg-amber-600 hover:bg-amber-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+            >
+                {openSession ? 'Confirm check-out' : 'Confirm check-in'}
+            </button>
+            {student.attendance_sessions.length > 0 && (
+                <div className="mt-4 border-t pt-4">
+                    <h4 className="text-sm font-semibold">Attendance record</h4>
+                    <ul className="mt-2 space-y-2 text-sm text-[#5B6478]">
+                        {student.attendance_sessions.map((session) => (
+                            <li key={session.id} className="rounded-md bg-black/5 px-3 py-2 dark:bg-white/5">
+                                <span className="font-medium text-foreground">In:</span>{' '}
+                                {formatAttendanceDate(session.checked_in_at)}
+                                <br />
+                                <span className="font-medium text-foreground">Out:</span>{' '}
+                                {session.checked_out_at
+                                    ? formatAttendanceDate(session.checked_out_at)
+                                    : 'Still checked in'}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
         </Card>
     );
+}
+
+function formatAttendanceDate(value: string): string {
+    return new Date(value).toLocaleString([], {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    });
 }

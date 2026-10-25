@@ -89,6 +89,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             required
                                             autoComplete="given-name"
                                             name="first_name"
+                                            pattern="[^0-9]+"
+                                            title="Names cannot contain numbers."
+                                            onInput={(event) => {
+                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                            }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />
                                         <InputError
@@ -111,6 +116,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             type="text"
                                             autoComplete="additional-name"
                                             name="middle_name"
+                                            pattern="[^0-9]+"
+                                            title="Names cannot contain numbers."
+                                            onInput={(event) => {
+                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                            }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />
                                         <InputError
@@ -131,6 +141,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             required
                                             autoComplete="family-name"
                                             name="last_name"
+                                            pattern="[^0-9]+"
+                                            title="Names cannot contain numbers."
+                                            onInput={(event) => {
+                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                            }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />
                                         <InputError
@@ -153,6 +168,11 @@ export default function Register({ passwordRules, courses }: Props) {
                                             type="text"
                                             name="suffix"
                                             placeholder="Jr., III"
+                                            pattern="[^0-9]+"
+                                            title="Names cannot contain numbers."
+                                            onInput={(event) => {
+                                                event.currentTarget.value = event.currentTarget.value.replace(/\d/g, '');
+                                            }}
                                             className="h-10 rounded-lg px-3 text-sm"
                                         />
                                         <InputError
@@ -245,6 +265,9 @@ export default function Register({ passwordRules, courses }: Props) {
                                         required
                                         autoComplete="email"
                                         name="email"
+                                        inputMode="email"
+                                        pattern="[A-Za-z0-9._%+-]+@acc\\.edu\\.ph"
+                                        title="Enter a valid ACC school email, for example you@acc.edu.ph."
                                         placeholder="you@acc.edu.ph"
                                         className="h-10 rounded-lg px-3 text-sm"
                                     />

@@ -25,11 +25,13 @@ import {
 } from '@/routes/student/concerns';
 import { index as studentEvents } from '@/routes/student/events';
 import { index as studentAnnouncements } from '@/routes/student/announcements';
+import { index as studentElections } from '@/routes/student/elections';
 
 export type NavItem = {
     label: string;
     href: string | null;
     icon: ComponentType<{ className?: string }>;
+    children?: { label: string; href: string }[];
 };
 
 /** Figma: "Council Officer" sidebar. */
@@ -40,7 +42,13 @@ export const officerNav = (): NavItem[] => [
     { label: 'Documents', href: documents().url, icon: FolderOpen },
     { label: 'Concerns', href: officerConcerns().url, icon: CircleAlert },
     { label: 'Events', href: officerEvents().url, icon: CalendarDays },
-    { label: 'Voting', href: '/officer/voting', icon: Vote },
+    {
+        label: 'Voting', href: null, icon: Vote,
+        children: [
+            { label: 'Elections', href: '/officer/voting' },
+            { label: 'Cast a ballot', href: studentElections().url },
+        ],
+    },
     { label: 'Directory', href: null, icon: Users },
 ];
 
@@ -51,7 +59,13 @@ export const presidentNav = (): NavItem[] => [
     { label: 'Tasking', href: board().url, icon: ClipboardList },
     { label: 'Concerns', href: officerConcerns().url, icon: CircleAlert },
     { label: 'Events', href: officerEvents().url, icon: CalendarDays },
-    { label: 'Voting', href: '/officer/voting', icon: Vote },
+    {
+        label: 'Voting', href: null, icon: Vote,
+        children: [
+            { label: 'Elections', href: '/officer/voting' },
+            { label: 'Cast a ballot', href: studentElections().url },
+        ],
+    },
     { label: 'Budget', href: '/officer/budget', icon: Wallet },
     { label: 'Members', href: '/officer/members', icon: Users },
     { label: 'Documents', href: documents().url, icon: FolderOpen },
@@ -64,6 +78,10 @@ export const studentNav = (): NavItem[] => [
     { label: 'My Concerns', href: myConcerns().url, icon: CircleAlert },
     { label: 'Events', href: studentEvents().url, icon: CalendarDays },
     { label: 'Organizations', href: '/student/organizations', icon: Building2 },
+    {
+        label: 'Voting', href: null, icon: Vote,
+        children: [{ label: 'Cast a ballot', href: studentElections().url }],
+    },
     {
         label: 'Announcements',
         href: studentAnnouncements().url,

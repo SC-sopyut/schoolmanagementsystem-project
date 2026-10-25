@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EventAttendee extends Model
 {
@@ -37,5 +38,11 @@ class EventAttendee extends Model
     public function checkedInBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'checked_in_by');
+    }
+
+    /** @return HasMany<EventAttendanceSession, $this> */
+    public function attendanceSessions(): HasMany
+    {
+        return $this->hasMany(EventAttendanceSession::class);
     }
 }

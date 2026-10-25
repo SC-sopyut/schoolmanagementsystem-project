@@ -53,6 +53,19 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
+test('users can not authenticate with a non-ACC email address', function () {
+    $user = User::factory()->create(['email' => 'student@example.com']);
+
+    $response = $this->from(route('login'))->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertRedirect(route('login'));
+    $response->assertSessionHasErrors('email');
+    $this->assertGuest();
+});
+
 test('users can logout', function () {
     $user = User::factory()->create();
 
