@@ -1,0 +1,389 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { Presentation, PresentationFile } from '@oai/artifact-tool';
+const wd = process.cwd(),
+    bd = path.join(wd, '.poster-build'),
+    assets = path.join(bd, 'assets'),
+    skill =
+        'C:/Users/corsi/.codex/plugins/cache/openai-primary-runtime/presentations/26.1015.12040/skills/presentations',
+    out = path.join(
+        wd,
+        'poster-output',
+        'CouncilForge_3x8ft_Portrait_ReferenceStyle.pptx',
+    ),
+    py =
+        'C:/Users/corsi/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
+const W = 1728,
+    H = 4608,
+    C = {
+        green: '#064522',
+        green2: '#0A6130',
+        gold: '#D9A52C',
+        white: '#FFFEF7',
+        paper: '#F3F8F0',
+        line: '#B6D0B9',
+        ink: '#07381E',
+        muted: '#55715C',
+        purple: '#7442A9',
+        blue: '#18629B',
+        orange: '#DC692B',
+    };
+const p = Presentation.create({ slideSize: { width: W, height: H } }),
+    s = p.slides.add();
+s.background.fill = C.paper;
+function shape(x, y, w, h, fill = C.white, r = 'rounded-lg', line = C.line) {
+    const q = {
+        geometry: r === 'none' ? 'rect' : 'roundRect',
+        position: { left: x, top: y, width: w, height: h },
+        fill,
+        line: { style: 'solid', fill: line, width: line === 'none' ? 0 : 1 },
+    };
+    if (r !== 'none') q.borderRadius = r;
+    return s.shapes.add(q);
+}
+function t(a, x, y, w, h, z = 24, c = C.ink, b = false, al = 'left') {
+    const q = s.shapes.add({
+        geometry: 'textbox',
+        position: { left: x, top: y, width: w, height: h },
+        fill: 'none',
+        line: { style: 'solid', fill: 'none', width: 0 },
+    });
+    q.text = a;
+    q.text.style = {
+        fontFamily: 'Aptos',
+        fontSize: z,
+        color: c,
+        bold: b,
+        paragraphAlignment: al,
+        marginLeft: 0,
+        marginRight: 0,
+        marginTop: 0,
+        marginBottom: 0,
+    };
+    return q;
+}
+function label(a, y) {
+    shape(62, y, 1604, 105, C.green, 'rounded-lg', C.green);
+    t(a, 94, y + 27, 1520, 48, 25, C.white, true);
+}
+function icon(x, y, sym, color = C.green) {
+    shape(x, y, 72, 72, color, 'rounded-full', color);
+    t(sym, x, y + 16, 72, 34, 29, C.white, true, 'center');
+}
+function card(x, y, w, h, sym, title, body, color = C.green) {
+    shape(x, y, w, h);
+    icon(x + 28, y + 28, sym, color);
+    t(title, x + 120, y + 34, w - 145, 30, 22, C.ink, true);
+    t(body, x + 30, y + 114, w - 60, h - 132, 18, C.muted);
+}
+async function image(name, x, y, w, h) {
+    const f = await fs.readFile(path.join(assets, name)),
+        blob = f.buffer.slice(f.byteOffset, f.byteOffset + f.byteLength);
+    s.images.add({
+        blob,
+        contentType: 'image/png',
+        alt: name,
+        fit: 'cover',
+        position: { left: x, top: y, width: w, height: h },
+        geometry: 'roundRect',
+        borderRadius: 'rounded-lg',
+    });
+}
+
+// Header inspired by supplied reference
+shape(0, 0, W, 610, C.green, 'none', C.green);
+shape(0, 605, W, 20, C.gold, 'none', C.gold);
+shape(0, 625, W, 18, '#F3D983', 'none', '#F3D983');
+icon(80, 90, 'ACC', C.gold);
+t('ABUYOG COMMUNITY COLLEGE', 180, 104, 840, 33, 25, C.white, true);
+t('Education for a Brighter Future', 180, 145, 650, 25, 15, '#D6EAD8');
+t('STUDENT COUNCIL\nMANAGEMENT SYSTEM', 92, 245, 910, 114, 48, C.white, true);
+t('CouncilForge Academic Project Poster', 96, 375, 800, 27, 20, '#D6EAD8');
+shape(1220, 105, 360, 190, '#0D512A', 'rounded-xl', '#D7E9D9');
+shape(1260, 137, 280, 36, C.white, 'rounded-lg', C.white);
+shape(1260, 189, 120, 110, C.green2, 'rounded-lg', C.green2);
+t('SC\nMG', 1273, 215, 90, 48, 17, C.white, true, 'center');
+shape(1400, 190, 120, 22, C.white, 'rounded-lg', C.white);
+shape(1400, 232, 90, 20, C.white, 'rounded-lg', C.white);
+shape(1400, 271, 120, 20, C.white, 'rounded-lg', C.white);
+t(
+    'Group Members: Sophia Corsiga, Princess Lhea Cominador, Evanlloyd Bandolin',
+    92,
+    480,
+    1050,
+    27,
+    17,
+    C.white,
+);
+t('Adviser: Richie A. Cabangon, MSc IT', 92, 520, 850, 27, 17, '#D6EAD8', true);
+
+// roles strip
+const roleY = 675;
+[
+    ['●', 'Students', 'Events, announcements, concerns', C.green],
+    ['✓', 'Officers', 'Tasks, budgets, events, documents', C.green2],
+    ['◆', 'Administrator', 'Accounts, users, audit records', C.purple],
+    ['♛', 'Role Based', 'Access follows user role', C.gold],
+].forEach((a, i) => {
+    const x = 62 + i * 402;
+    shape(x, roleY, 378, 280);
+    icon(x + 30, roleY + 40, a[0], a[3]);
+    t(a[1], x + 126, roleY + 55, 220, 28, 20, C.ink, true);
+    t(a[2], x + 30, roleY + 160, 310, 52, 18, C.muted);
+});
+
+label('SUSTAINABLE DEVELOPMENT GOALS AND SYSTEM AGENDA', 1005);
+shape(62, 1135, 910, 415);
+shape(996, 1135, 670, 415, '#E7F2E6');
+t('Sustainable Development Goals', 105, 1180, 600, 28, 23, C.ink, true);
+t('Relevant SDGs for the project', 105, 1220, 500, 23, 17, C.muted);
+[
+    ['SDG 4', 'Quality\nEducation', '#C5192D'],
+    ['SDG 9', 'Innovation &\nInfrastructure', '#FD6925'],
+    ['SDG 16', 'Peace, Justice &\nInstitutions', '#00689D'],
+].forEach((a, i) => {
+    const x = 105 + i * 270;
+    shape(x, 1285, 240, 170, a[2], 'rounded-lg', a[2]);
+    t(a[0], x + 24, 1310, 190, 24, 18, C.white, true);
+    t(a[1], x + 24, 1360, 195, 56, 22, C.white, true, 'center');
+});
+t('System Agenda', 1040, 1180, 500, 28, 23, C.ink, true);
+icon(1042, 1270, '✓', C.green);
+t(
+    'Digital information\nInitiative access\nEfficient governance\nData security and privacy\nSustainable partnerships',
+    1142,
+    1263,
+    455,
+    190,
+    20,
+    C.ink,
+    true,
+);
+
+label('CORE SYSTEM FUNCTIONS', 1590);
+const features = [
+    [
+        '▤',
+        'Task Boards',
+        'Organize committee work and follow task progress.',
+        C.green,
+    ],
+    [
+        '◷',
+        'Event Planning',
+        'Keep budgets, schedules, and attendees together.',
+        C.green2,
+    ],
+    [
+        '◆',
+        'Voting and Polling',
+        'Manage elections and publish results.',
+        C.purple,
+    ],
+    [
+        '!',
+        'Concerns Routing',
+        'Receive, review, and resolve student concerns.',
+        C.gold,
+    ],
+    [
+        '▥',
+        'Documents',
+        'Store files in shared folders with access control.',
+        C.green,
+    ],
+    [
+        '⚑',
+        'Announcements',
+        'Share information with the intended audience.',
+        C.green2,
+    ],
+];
+features.forEach((a, i) =>
+    card(
+        62 + (i % 3) * 540,
+        1730 + Math.floor(i / 3) * 255,
+        512,
+        225,
+        a[0],
+        a[1],
+        a[2],
+        a[3],
+    ),
+);
+
+label('SYSTEM ARCHITECTURE AND SECURITY FLOW', 2280);
+shape(62, 2410, 772, 570);
+t('System Architecture', 102, 2450, 500, 30, 24, C.ink, true);
+[
+    ['Users', 'Students, officers, OSA/Admin'],
+    ['Web Platform', 'Role-aware modules and dashboards'],
+    ['Services', 'Authentication, workflows, notifications'],
+    ['Data Layer', 'Accounts, organizations, audit records'],
+].forEach((a, i) => {
+    const y = 2515 + i * 100;
+    shape(
+        105,
+        y,
+        215,
+        50,
+        i === 0 ? C.green : '#E7F2E6',
+        'rounded-lg',
+        i === 0 ? C.green : '#E7F2E6',
+    );
+    t(
+        a[0],
+        120,
+        y + 14,
+        180,
+        20,
+        17,
+        i === 0 ? C.white : C.ink,
+        true,
+        'center',
+    );
+    t(a[1], 350, y + 12, 420, 25, 18, C.muted);
+    if (i < 3) t('↓', 186, y + 55, 55, 30, 23, C.green, true, 'center');
+});
+shape(864, 2410, 802, 570);
+t('RBAC and Security Flow', 905, 2450, 600, 30, 24, C.ink, true);
+[
+    ['1', 'Sign in'],
+    ['2', 'Verify identity'],
+    ['3', 'Check role'],
+    ['4', 'Allow action'],
+].forEach((a, i) => {
+    const x = 900 + i * 185;
+    icon(x, 2525, a[0], [C.green, C.green2, C.purple, C.gold][i]);
+    t(a[1], x - 15, 2615, 105, 25, 16, C.ink, true, 'center');
+    if (i < 3) t('›', x + 118, 2540, 35, 35, 28, C.green, true, 'center');
+});
+t(
+    'Permissions limit each user to their authorized scope. Administrator access, account verification, anonymous concerns, and identity reveals have controlled and auditable handling.',
+    905,
+    2695,
+    700,
+    105,
+    20,
+    C.muted,
+);
+
+label('DEVELOPMENT METHODOLOGY AND USER ROLES', 3035);
+shape(62, 3165, 1604, 310);
+[
+    ['1', 'Discover', 'Map council workflows'],
+    ['2', 'Design', 'Define modules and roles'],
+    ['3', 'Build', 'Develop core services'],
+    ['4', 'Test', 'Validate access and usability'],
+    ['5', 'Refine', 'Improve from feedback'],
+].forEach((a, i) => {
+    const x = 110 + i * 305;
+    icon(x, 3230, a[0], [C.green, C.green2, C.purple, C.gold, C.green][i]);
+    t(a[1], x - 30, 3325, 135, 24, 19, C.ink, true, 'center');
+    t(a[2], x - 68, 3358, 205, 38, 16, C.muted, false, 'center');
+    if (i < 4) t('›', x + 195, 3243, 35, 36, 26, C.green, true, 'center');
+});
+shape(62, 3510, 1604, 355);
+t('User Roles', 102, 3552, 420, 30, 24, C.ink, true);
+[
+    [
+        'Student',
+        'Submit concerns, join events, and view announcements.',
+        C.green,
+    ],
+    ['Officer', 'Manage tasks, members, budgets, and activities.', C.green2],
+    ['President', 'Coordinate organization-wide council operations.', C.purple],
+    [
+        'Administrator',
+        'Verify accounts, oversee records, and audit access.',
+        C.gold,
+    ],
+].forEach((a, i) => {
+    const y = 3610 + i * 58;
+    t('●', 105, y, 24, 22, 17, a[2], true);
+    t(a[0], 150, y, 250, 25, 20, C.ink, true);
+    t(a[1], 430, y, 1120, 25, 19, C.muted);
+});
+
+label('SYSTEM SCREENSHOTS', 3910);
+await image('landing.png', 62, 4040, 480, 170);
+await image('council-dashboard.png', 570, 4040, 480, 170);
+await image('student-dashboard.png', 1078, 4040, 480, 170);
+await image('login.png', 62, 4235, 480, 170);
+await image('admin-dashboard.png', 570, 4235, 480, 170);
+shape(1078, 4235, 480, 170, '#E7F2E6');
+t(
+    'CouncilForge connects student participation with transparent and accountable council work.',
+    1120,
+    4270,
+    395,
+    82,
+    24,
+    C.ink,
+    true,
+    'center',
+);
+shape(0, 4465, W, 143, C.green, 'none', C.green);
+icon(82, 4490, 'ACC', C.gold);
+t('ABUYOG COMMUNITY COLLEGE', 185, 4504, 700, 27, 21, C.white, true);
+t('Student Council Management System', 185, 4540, 700, 22, 16, '#D6EAD8');
+t(
+    'Developed by\nSophia Corsiga\nPrincess Lhea Cominador\nEvanlloyd Bandolin',
+    920,
+    4490,
+    420,
+    80,
+    16,
+    C.white,
+);
+t(
+    'Adviser: Richie A. Cabangon, MSc IT',
+    920,
+    4570,
+    520,
+    22,
+    16,
+    '#D6EAD8',
+    true,
+);
+const { finalizePresentation } = await import(
+    pathToFileURL(
+        path.join(skill, 'container_tools', 'artifact_tool_utils.mjs'),
+    ).href
+);
+const staging = path.join(bd, 'finalizer');
+await fs.mkdir(staging, { recursive: true });
+await fs.mkdir(path.dirname(out), { recursive: true });
+const candidate = path.join(staging, 'candidate-reference-style.pptx');
+await (await PresentationFile.exportPptx(p)).save(candidate);
+const result = await finalizePresentation({
+    workspaceDir: wd,
+    candidatePath: candidate,
+    finalPath: out,
+    pythonExecutable: py,
+    integrityValidatorPath: path.join(
+        skill,
+        'container_tools',
+        'inspect_presentation_package_integrity.py',
+    ),
+    layoutValidatorPath: path.join(
+        skill,
+        'container_tools',
+        'inspect_presentation_layout_geometry.py',
+    ),
+    layoutArgs: [
+        '--expected-slide-size-emu',
+        '16459200,43891200',
+        '--validate-heading-fit',
+    ],
+    fontPolicy: { basis: 'design', families: ['Aptos'] },
+    verifyArtifactToolImport: true,
+    receiptPath: path.join(staging, 'validation-reference-style.json'),
+});
+console.log(JSON.stringify(result, null, 2));
+const png = await p.export({ slide: s, format: 'png', scale: 1 });
+await fs.writeFile(
+    path.join(bd, 'poster-reference-style-preview.png'),
+    new Uint8Array(await png.arrayBuffer()),
+);

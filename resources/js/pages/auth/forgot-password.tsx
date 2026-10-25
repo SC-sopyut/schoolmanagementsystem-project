@@ -61,6 +61,9 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                         autoComplete="email"
                                         autoFocus
                                         required
+                                        inputMode="email"
+                                        pattern="[A-Za-z0-9._%+-]+@acc\\.edu\\.ph"
+                                        title="Enter a valid ACC school email, for example you@acc.edu.ph."
                                         placeholder="you@acc.edu.ph"
                                         className="h-10 rounded-lg px-3 text-sm"
                                     />

@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreVoteRequest;
-use App\Models\Election;
 use App\Models\Ballot;
+use App\Models\Election;
 use App\Models\VoteRecord;
+use App\Support\ExpiryService;
 use App\Support\OfficerScope;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -24,8 +25,12 @@ class ElectionController extends Controller
      */
     public function index(): Response
     {
+        ExpiryService::sync();
         $user = OfficerScope::user(request()->user());
         $orgIds = $user->organizations()->pluck('organizations.id');
+        if ($user->officerProfile?->organization_id) {
+            $orgIds->push($user->officerProfile->organization_id);
+        }
 
         $elections = Election::query()
             ->where(fn ($q) => $q->whereNull('organization_id')->orWhereIn('organization_id', $orgIds))
@@ -49,6 +54,7 @@ class ElectionController extends Controller
 
     public function show(Election $election): Response
     {
+        ExpiryService::sync();
         $this->authorizeViewable($election);
 
         $election->load(['organization:id,name', 'candidates.user:id,name']);
@@ -107,7 +113,8 @@ class ElectionController extends Controller
     {
         $user = OfficerScope::user(request()->user());
         $isMember = $election->isCouncilWide()
-            || $user->organizations()->where('organizations.id', $election->organization_id)->exists();
+            || $user->organizations()->where('organizations.id', $election->organization_id)->exists()
+            || $user->officerProfile?->organization_id === $election->organization_id;
 
         abort_unless($isMember, 403);
     }

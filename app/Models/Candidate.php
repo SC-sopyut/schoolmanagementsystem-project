@@ -13,7 +13,7 @@ class Candidate extends Model
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    protected $fillable = ['election_id', 'user_id', 'position', 'platform'];
+    protected $fillable = ['election_id', 'user_id', 'position', 'party_name', 'platform'];
 
     /** @return BelongsTo<Election, $this> */
     public function election(): BelongsTo

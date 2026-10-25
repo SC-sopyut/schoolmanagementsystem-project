@@ -10,8 +10,13 @@ class ElectionPolicy extends VotePolicy
     public function create(User $user, ?int $organizationId): bool
     {
         $officer = $user->officerProfile;
-        if ($officer === null) return false;
-        if ($organizationId === null) return (bool) ($officer->organization?->is_council);
+        if ($officer === null) {
+            return false;
+        }
+        if ($organizationId === null) {
+            return (bool) ($officer->organization?->is_council);
+        }
+
         return $officer->visibleOrganizationIds()->contains($organizationId);
     }
 

@@ -178,15 +178,24 @@ export default function Profile() {
                     <CardHeader>
                         <CardTitle>Your event check-in QR code</CardTitle>
                         <p className="text-muted-foreground text-sm">
-                            Show this code to an officer at an event. It contains a private CouncilForge check-in code, not your account ID.
+                            Show this code to an officer at an event. It
+                            contains a private CouncilForge check-in code, not
+                            your account ID.
                         </p>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
                         <div className="rounded-xl bg-white p-4">
-                            <QRCodeSVG value={checkinCode} size={168} level="M" includeMargin />
+                            <QRCodeSVG
+                                value={checkinCode}
+                                size={168}
+                                level="M"
+                                includeMargin
+                            />
                         </div>
                         <p className="text-muted-foreground max-w-md text-sm">
-                            The officer will confirm your name before recording attendance. Keep this code private and do not share screenshots of it.
+                            The officer will confirm your name before recording
+                            attendance. Keep this code private and do not share
+                            screenshots of it.
                         </p>
                     </CardContent>
                 </Card>

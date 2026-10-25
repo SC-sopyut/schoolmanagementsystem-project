@@ -14,7 +14,7 @@ import {
     type Tone,
 } from '@/components/council/ui';
 import { store as storeEvent } from '@/routes/officer/events';
-import { Link, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, MapPin, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,6 +23,7 @@ type Ev = {
     title: string;
     location: string | null;
     starts_at: string;
+    ends_at: string;
     status: string;
     organization: string;
     attendees_count: number;
@@ -73,6 +74,27 @@ export default function Events({
     const upcoming = events
         .filter((e) => new Date(e.starts_at) >= new Date())
         .slice(0, 3);
+    const reschedule = (event: Ev) => {
+        const starts_at = window.prompt(
+            'New start date and time (YYYY-MM-DD HH:MM)',
+            event.starts_at.slice(0, 16),
+        );
+        if (!starts_at) return;
+        const ends_at = window.prompt(
+            'New end date and time (YYYY-MM-DD HH:MM)',
+            event.ends_at.slice(0, 16),
+        );
+        if (!ends_at) return;
+        const reason = window.prompt(
+            'Why are these event dates changing? This will be saved in the activity log.',
+        );
+        if (!reason?.trim()) return;
+        router.post(
+            `/officer/events/${event.id}/reschedule`,
+            { starts_at, ends_at, reason },
+            { preserveScroll: true },
+        );
+    };
 
     return (
         <CouncilLayout title="Events">
@@ -124,17 +146,34 @@ export default function Events({
                                                 {e.attendees_count} RSVP
                                             </span>
                                         </div>
+                                        {e.status === 'expired' && (
+                                            <div className="mb-2 flex items-center justify-between rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
+                                                <span>Expired</span>
+                                                {e.can_manage && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            reschedule(e)
+                                                        }
+                                                        className="font-semibold underline"
+                                                    >
+                                                        Change dates
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                         <p className="font-semibold">
                                             {e.title}
                                         </p>
-                                        {e.can_manage && (
-                                            <Link
-                                                href={`/officer/events/${e.id}/attendance`}
-                                                className="mt-3 inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
-                                            >
-                                                Open attendance
-                                            </Link>
-                                        )}
+                                        {e.can_manage &&
+                                            e.status !== 'expired' && (
+                                                <Link
+                                                    href={`/officer/events/${e.id}/attendance`}
+                                                    className="mt-3 inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                                                >
+                                                    Open attendance
+                                                </Link>
+                                            )}
                                         <p className="mb-3 flex flex-wrap items-center gap-x-3 text-xs text-[#5B6478]">
                                             <span>
                                                 {new Date(

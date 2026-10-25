@@ -74,13 +74,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('events', [Officer\EventPlanningController::class, 'index'])->name('events.index');
         Route::get('events/{event}/attendance', [Officer\EventAttendanceController::class, 'index'])->name('events.attendance.index');
-        Route::post('events/{event}/attendance', [Officer\EventAttendanceController::class, 'checkIn'])->name('events.attendance.check-in');
+        Route::post('events/{event}/attendance', [Officer\EventAttendanceController::class, 'recordAttendance'])->name('events.attendance.record');
         Route::get('voting', [Officer\ElectionController::class, 'index'])->name('voting.index');
         Route::post('voting', [Officer\ElectionController::class, 'store'])->name('voting.store');
+        Route::post('voting/{election}/candidates', [Officer\ElectionController::class, 'storeCandidate'])->name('voting.candidates.store');
+        Route::patch('voting/{election}', [Officer\ElectionController::class, 'update'])->name('voting.update');
         Route::post('voting/{election}/open', [Officer\ElectionController::class, 'open'])->name('voting.open');
+        Route::post('voting/{election}/reschedule', [Officer\ElectionController::class, 'reschedule'])->name('voting.reschedule');
         Route::post('voting/{election}/close', [Officer\ElectionController::class, 'close'])->name('voting.close');
         Route::post('voting/{election}/publish-results', [Officer\ElectionController::class, 'publish'])->name('voting.publish');
         Route::post('events', [Officer\EventPlanningController::class, 'store'])->name('events.store');
+        Route::post('events/{event}/reschedule', [Officer\EventPlanningController::class, 'reschedule'])->name('events.reschedule');
         Route::post('events/{event}/budget-items', [Officer\EventPlanningController::class, 'storeBudgetItem'])->name('events.budget-items.store');
         Route::patch('events/{event}/checklist-items/{checklistItem}/toggle', [Officer\EventPlanningController::class, 'toggleChecklistItem'])->name('events.checklist-items.toggle');
 

@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Election;
 use App\Models\User;
+use App\Models\VoteRecord;
 
 class VotePolicy
 {
@@ -28,14 +29,15 @@ class VotePolicy
         if (! $election->isCouncilWide()) {
             $isMember = $user->organizations()
                 ->where('organizations.id', $election->organization_id)
-                ->exists();
+                ->exists()
+                || $user->officerProfile?->organization_id === $election->organization_id;
 
             if (! $isMember) {
                 return false;
             }
         }
 
-        $alreadyVoted = \App\Models\VoteRecord::query()
+        $alreadyVoted = VoteRecord::query()
             ->where('election_id', $election->id)
             ->where('user_id', $user->id)
             ->where('position', $position)

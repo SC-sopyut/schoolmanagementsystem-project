@@ -11,6 +11,7 @@ use App\Models\Event;
 use App\Models\EventChecklistItem;
 use App\Models\FeedItem;
 use App\Models\Organization;
+use App\Support\ExpiryService;
 use App\Support\OfficerScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -29,6 +30,7 @@ class EventPlanningController extends Controller
      */
     public function index(Request $request): Response
     {
+        ExpiryService::sync();
         $user = OfficerScope::user($request->user());
         $officer = OfficerScope::profile($user);
         $orgIds = $officer->visibleOrganizationIds();
@@ -46,7 +48,7 @@ class EventPlanningController extends Controller
             ->orderBy('starts_at')->get()
             ->map(fn (Event $e) => [
                 'id' => $e->id, 'title' => $e->title, 'location' => $e->location,
-                'starts_at' => $e->starts_at, 'status' => $e->status,
+                'starts_at' => $e->starts_at, 'ends_at' => $e->ends_at, 'status' => $e->status,
                 'organization' => $e->organization->name ?? 'School-wide',
                 'attendees_count' => $e->attendees_count,
                 'budget_allocated' => (float) $e->budget_allocated,
@@ -62,6 +64,25 @@ class EventPlanningController extends Controller
             'plannable_organizations' => Organization::whereIn('id', $orgIds)->get(['id', 'name']),
             'can_plan_school_wide' => (bool) $officer->organization?->is_council,
         ]);
+    }
+
+    public function reschedule(Request $request, Event $event): RedirectResponse
+    {
+        $this->authorize('managePlanning', $event);
+        $data = $request->validate([
+            'starts_at' => ['required', 'date'],
+            'ends_at' => ['required', 'date', 'after:starts_at'],
+            'reason' => ['required', 'string', 'max:500'],
+        ]);
+        $before = ['starts_at' => $event->starts_at, 'ends_at' => $event->ends_at];
+        $event->update([
+            'starts_at' => $data['starts_at'],
+            'ends_at' => $data['ends_at'],
+            'status' => $event->status === 'expired' ? 'planned' : $event->status,
+        ]);
+        AuditLog::create(['actor_type' => $request->user()->getMorphClass(), 'actor_id' => $request->user()->id, 'action' => 'event.rescheduled', 'subject_type' => Event::class, 'subject_id' => $event->id, 'organization_id' => $event->organization_id, 'metadata' => ['title' => $event->title, 'before' => $before, 'after' => ['starts_at' => $data['starts_at'], 'ends_at' => $data['ends_at']], 'reason' => $data['reason']], 'ip_address' => $request->ip()]);
+
+        return back()->with('success', 'Event dates updated and the reason was logged.');
     }
 
     public function voting(Request $request): Response

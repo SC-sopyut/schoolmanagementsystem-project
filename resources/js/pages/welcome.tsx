@@ -327,14 +327,16 @@ export default function Welcome({
             <div className="min-h-screen bg-[#F5F6F8] text-[#101B33]">
                 {/* Nav */}
                 <header className="sticky top-0 z-10 bg-[#0c351d]/97 backdrop-blur">
-                    <div className="mx-auto flex max-w-5xl items-center justify-between px-7 py-4">
-                        <div className="flex items-center gap-2.5 font-semibold text-white">
+                    <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-7 sm:py-4">
+                        <div className="flex min-w-0 items-center gap-2 font-semibold text-white sm:gap-2.5">
                             <img
                                 src="/images/councilforge-logo.png"
                                 alt="CouncilForge logo"
-                                className="h-12 w-12"
+                                className="h-10 w-10 shrink-0 sm:h-12 sm:w-12"
                             />
-                            CouncilForge
+                            <span className="truncate text-base sm:text-lg">
+                                CouncilForge
+                            </span>
                         </div>
                         <nav className="hidden gap-7 text-sm text-[#D8DED9] sm:flex">
                             <a
@@ -362,8 +364,10 @@ export default function Welcome({
                                 ACC &amp; OSA
                             </a>
                         </nav>
-                        <div className="flex items-center gap-4">
-                            <AppearanceToggle />
+                        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+                            <div className="hidden sm:block">
+                                <AppearanceToggle />
+                            </div>
                             <Link
                                 href={login()}
                                 className="text-sm font-medium text-[#D8DED9] hover:text-white"
@@ -372,7 +376,7 @@ export default function Welcome({
                             </Link>
                             <Link
                                 href={register()}
-                                className="rounded-lg bg-[#C1571F] px-4 py-2 text-sm font-semibold text-white"
+                                className="rounded-lg bg-[#C1571F] px-3 py-2 text-sm font-semibold text-white sm:px-4"
                             >
                                 Sign in
                             </Link>
@@ -396,7 +400,7 @@ export default function Welcome({
                         }}
                     />
 
-                    <div className="relative ml-48 px-8 py-16 sm:ml-48 sm:px-12 sm:py-20">
+                    <div className="relative mx-auto max-w-5xl px-6 py-14 sm:px-12 sm:py-20">
                         <h1
                             ref={heroHeadingRef}
                             className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl"
